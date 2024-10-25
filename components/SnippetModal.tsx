@@ -1,19 +1,19 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Highlight, themes } from 'prism-react-renderer'
-import { Maximize2, Edit, Trash2, Copy, Check, X, Save } from 'lucide-react'
-import { Snippet } from '../types/snippet'
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Highlight, themes } from "prism-react-renderer";
+import { Maximize2, Edit, Trash2, Copy, Check, X, Save } from "lucide-react";
+import { Snippet } from "../types/snippet";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 interface SnippetModalProps {
-  snippet: Snippet
-  onClose: () => void
-  onEdit: () => void
-  onDelete: () => void
-  onFullScreen: () => void
+  snippet: Snippet;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onFullScreen: () => void;
 }
 
 const SnippetModal: React.FC<SnippetModalProps> = ({
@@ -23,46 +23,58 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
   onDelete,
   onFullScreen,
 }) => {
-  const [isEditing, setIsEditing] = useState(false)
-  const [editedSnippet, setEditedSnippet] = useState(snippet)
-  const [isCopied, setIsCopied] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedSnippet, setEditedSnippet] = useState<Snippet>(snippet);
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(snippet.content)
-    setIsCopied(true)
-    setTimeout(() => setIsCopied(false), 2000)
-  }
+    navigator.clipboard.writeText(snippet.content);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   const handleSave = async () => {
     try {
-      const snippetRef = doc(db, 'snippets', snippet.id)
-      await updateDoc(snippetRef, editedSnippet)
-      onEdit()
-      setIsEditing(false)
+      const snippetRef = doc(db, "snippets", snippet.id);
+      await updateDoc(snippetRef, {
+        title: editedSnippet.title,
+        content: editedSnippet.content,
+        language: editedSnippet.language,
+        tags: editedSnippet.tags,
+      });
+      onEdit();
+      setIsEditing(false);
     } catch (error) {
-      console.error('Error updating snippet:', error)
+      console.error("Error updating snippet:", error);
     }
-  }
+  };
 
   const handleDelete = async () => {
     try {
-      await deleteDoc(doc(db, 'snippets', snippet.id))
-      onDelete()
-      onClose()
+      await deleteDoc(doc(db, "snippets", snippet.id));
+      onDelete();
+      onClose();
     } catch (error) {
-      console.error('Error deleting snippet:', error)
+      console.error("Error deleting snippet:", error);
     }
-  }
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setEditedSnippet(prev => ({ ...prev, [name]: value }))
-  }
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setEditedSnippet((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
-    setEditedSnippet(prev => ({ ...prev, tags: value.split(',').map(tag => tag.trim()) }))
-  }
+    const { value } = e.target;
+    setEditedSnippet((prev) => ({
+      ...prev,
+      tags: value.split(",").map((tag) => tag.trim()),
+    }));
+  };
 
   return (
     <motion.div
@@ -88,7 +100,9 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 className="text-2xl font-semibold w-full px-2 py-1 border border-gray-300 rounded-md"
               />
             ) : (
-              <h2 className="text-2xl font-semibold">{snippet.title}</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                {snippet.title}
+              </h2>
             )}
             <button
               onClick={onClose}
@@ -102,7 +116,10 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
           {isEditing ? (
             <div className="space-y-4">
               <div>
-                <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="language"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Language
                 </label>
                 <select
@@ -120,36 +137,84 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 </select>
               </div>
               <div>
-                <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="content"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Content
                 </label>
-                <textarea
-                  id="content"
-                  name="content"
-                  value={editedSnippet.content}
-                  onChange={handleInputChange}
-                  rows={10}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                <div className="relative">
+                  <Highlight
+                    theme={themes.github}
+                    code={editedSnippet.content}
+                    language={editedSnippet.language as any}
+                  >
+                    {({
+                      className,
+                      style,
+                      tokens,
+                      getLineProps,
+                      getTokenProps,
+                    }) => (
+                      <pre
+                        className={`${className} p-4 rounded-md overflow-auto`}
+                        style={style}
+                      >
+                        {tokens.map((line, i) => (
+                          <div key={i} {...getLineProps({ line, key: i })}>
+                            {line.map((token, key) => (
+                              <span
+                                key={key}
+                                {...getTokenProps({ token, key })}
+                              />
+                            ))}
+                          </div>
+                        ))}
+                      </pre>
+                    )}
+                  </Highlight>
+                  <textarea
+                    id="content"
+                    name="content"
+                    value={editedSnippet.content}
+                    onChange={handleInputChange}
+                    rows={10}
+                    className="absolute inset-0 w-full h-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm bg-transparent resize-none"
+                    style={{
+                      color: "transparent",
+                      caretColor: "black",
+                    }}
+                  />
+                </div>
               </div>
               <div>
-                <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="tags"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Tags (comma-separated)
                 </label>
                 <input
                   type="text"
                   id="tags"
                   name="tags"
-                  value={editedSnippet.tags.join(', ')}
+                  value={editedSnippet.tags.join(", ")}
                   onChange={handleTagsChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
           ) : (
-            <Highlight theme={themes.dracula} code={snippet.content} language={snippet.language as any}>
+            <Highlight
+              theme={themes.github}
+              code={snippet.content}
+              language={snippet.language as any}
+            >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                <pre className={`${className} p-4 rounded-md`} style={style}>
+                <pre
+                  className={`${className} p-4 rounded-md overflow-auto h-full`}
+                  style={style}
+                >
                   {tokens.map((line, i) => (
                     <div key={i} {...getLineProps({ line, key: i })}>
                       {line.map((token, key) => (
@@ -228,7 +293,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         </div>
       </motion.div>
     </motion.div>
-  )
-}
+  );
+};
 
-export default SnippetModal
+export default SnippetModal;
