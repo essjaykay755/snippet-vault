@@ -5,17 +5,11 @@ import ClientSidebar from "../components/ClientSidebar";
 import SnippetGrid from "../components/SnippetGrid";
 import AddSnippetButton from "../components/AddSnippetButton";
 import AddSnippetForm from "../components/AddSnippetForm";
-import { Snippet } from "../types/snippet";
 
 export default function Home() {
   const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  const handleAddSnippet = () => {
-    // Handle adding the snippet (e.g., update state or refetch snippets)
-    setIsAddSnippetModalOpen(false);
-  };
 
   const handleFilterChange = (languages: string[], tags: string[]) => {
     setSelectedLanguages(languages);
@@ -36,10 +30,8 @@ export default function Home() {
         />
         {isAddSnippetModalOpen && (
           <AddSnippetForm
+            onSave={() => setIsAddSnippetModalOpen(false)}
             onClose={() => setIsAddSnippetModalOpen(false)}
-            onSave={function (snippet: Omit<Snippet, "id" | "userId">): void {
-              throw new Error("Function not implemented.");
-            }}
           />
         )}
       </main>
