@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Highlight, themes } from "prism-react-renderer";
+import { Highlight, themes, Language } from "prism-react-renderer";
 import { Maximize2, Edit, Trash2, Copy, Check, X, Save } from "lucide-react";
 import { Snippet } from "../types/snippet";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
@@ -147,7 +147,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                   <Highlight
                     theme={themes.github}
                     code={editedSnippet.content}
-                    language={editedSnippet.language as any}
+                    language={editedSnippet.language as Language}
                   >
                     {({
                       className,
@@ -208,7 +208,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
             <Highlight
               theme={themes.github}
               code={snippet.content}
-              language={snippet.language as any}
+              language={snippet.language as Language}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
                 <pre

@@ -1,35 +1,45 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import SignIn from "../components/SignIn";
 import ClientSidebar from "../components/ClientSidebar";
 import SnippetGrid from "../components/SnippetGrid";
+import AddSnippetButton from "../components/AddSnippetButton";
+import AddSnippetForm from "../components/AddSnippetForm";
+import { Snippet } from "../types/snippet";
 
 export default function Home() {
-  const { user, loading } = useAuth();
-  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const handleAddSnippet = (snippet: Omit<Snippet, "id" | "userId">) => {
+    // Handle adding the snippet (e.g., update state or refetch snippets)
+    setIsAddSnippetModalOpen(false);
+  };
 
-  if (!user) {
-    return <SignIn />;
-  }
+  const handleFilterChange = (languages: string[], tags: string[]) => {
+    setSelectedLanguages(languages);
+    setSelectedTags(tags);
+  };
 
   return (
-    <div className="flex h-screen">
-      <ClientSidebar
-        onLanguageSelect={setSelectedLanguage}
-        onTagSelect={setSelectedTag}
-      />
-      <main className="flex-1 overflow-auto">
+    <div className="flex h-screen bg-gray-100">
+      <ClientSidebar onFilterChange={handleFilterChange} />
+      <main className="flex-1 p-8 overflow-auto">
+        <div className="mb-6 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-800">Your Snippets</h1>
+          <AddSnippetButton onClick={() => setIsAddSnippetModalOpen(true)} />
+        </div>
         <SnippetGrid
-          selectedLanguage={selectedLanguage}
-          selectedTag={selectedTag}
+          selectedLanguages={selectedLanguages}
+          selectedTags={selectedTags}
         />
+        {isAddSnippetModalOpen && (
+          <AddSnippetForm
+            onSave={handleAddSnippet}
+            onClose={() => setIsAddSnippetModalOpen(false)}
+          />
+        )}
       </main>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Highlight, themes } from "prism-react-renderer";
+import { Highlight, themes, Language } from "prism-react-renderer";
 import { motion } from "framer-motion";
 import { Copy, Check, Link as LinkIcon } from "lucide-react";
 import SnippetModal from "./SnippetModal";
@@ -77,7 +77,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
             <Highlight
               theme={themes.github}
               code={snippet.content}
-              language={snippet.language as any}
+              language={snippet.language as Language}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
                 <pre
@@ -89,17 +89,13 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
                     padding: 0,
                   }}
                 >
-                  {tokens.slice(0, 5).map((line, i) => {
-                    const lineProps = getLineProps({ line, key: i });
-                    return (
-                      <div key={i} {...lineProps}>
-                        {line.map((token, key) => {
-                          const tokenProps = getTokenProps({ token, key });
-                          return <span key={key} {...tokenProps} />;
-                        })}
-                      </div>
-                    );
-                  })}
+                  {tokens.slice(0, 5).map((line, i) => (
+                    <div key={i} {...getLineProps({ line, key: i })}>
+                      {line.map((token, key) => (
+                        <span key={key} {...getTokenProps({ token, key })} />
+                      ))}
+                    </div>
+                  ))}
                   {tokens.length > 5 && <div>...</div>}
                 </pre>
               )}

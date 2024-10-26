@@ -1,44 +1,44 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../../../lib/firebase'
-import { Highlight, themes } from 'prism-react-renderer'
-import { ArrowLeft, Copy, Check } from 'lucide-react'
-import { Snippet } from '../../../types/snippet'
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../../lib/firebase";
+import { Highlight, themes, Language } from "prism-react-renderer";
+import { ArrowLeft, Copy, Check } from "lucide-react";
+import { Snippet } from "../../../types/snippet";
 
 const SnippetPage = () => {
-  const [snippet, setSnippet] = useState<Snippet | null>(null)
-  const [isCopied, setIsCopied] = useState(false)
-  const params = useParams()
-  const router = useRouter()
+  const [snippet, setSnippet] = useState<Snippet | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const params = useParams();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchSnippet = async () => {
-      if (typeof params.id !== 'string') return
-      const snippetRef = doc(db, 'snippets', params.id)
-      const snippetDoc = await getDoc(snippetRef)
+      if (typeof params.id !== "string") return;
+      const snippetRef = doc(db, "snippets", params.id);
+      const snippetDoc = await getDoc(snippetRef);
       if (snippetDoc.exists()) {
-        setSnippet({ id: snippetDoc.id, ...snippetDoc.data() } as Snippet)
+        setSnippet({ id: snippetDoc.id, ...snippetDoc.data() } as Snippet);
       } else {
-        console.log('No such document!')
+        console.log("No such document!");
       }
-    }
+    };
 
-    fetchSnippet()
-  }, [params.id])
+    fetchSnippet();
+  }, [params.id]);
 
   const handleCopy = () => {
     if (snippet) {
-      navigator.clipboard.writeText(snippet.content)
-      setIsCopied(true)
-      setTimeout(() => setIsCopied(false), 2000)
+      navigator.clipboard.writeText(snippet.content);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
     }
-  }
+  };
 
   if (!snippet) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   return (
@@ -75,7 +75,11 @@ const SnippetPage = () => {
               )}
             </button>
           </div>
-          <Highlight theme={themes.dracula} code={snippet.content} language={snippet.language as any}>
+          <Highlight
+            theme={themes.dracula}
+            code={snippet.content}
+            language={snippet.language as Language}
+          >
             {({ className, style, tokens, getLineProps, getTokenProps }) => (
               <pre className={`${className} p-4 rounded-md`} style={style}>
                 {tokens.map((line, i) => (
@@ -91,7 +95,10 @@ const SnippetPage = () => {
           <div className="mt-4">
             <span className="text-sm text-gray-500">Tags: </span>
             {snippet.tags.map((tag, index) => (
-              <span key={index} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
+              <span
+                key={index}
+                className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+              >
                 {tag}
               </span>
             ))}
@@ -99,7 +106,7 @@ const SnippetPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SnippetPage
+export default SnippetPage;

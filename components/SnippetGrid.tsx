@@ -1,77 +1,72 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { collection, query, where, getDocs } from 'firebase/firestore'
-import { db } from '../lib/firebase'
-import { useAuth } from '../contexts/AuthContext'
-import SnippetCard from './SnippetCard'
-import AddSnippetButton from './AddSnippetButton'
-import AddSnippetForm from './AddSnippetForm'
-import { Snippet } from '../types/snippet'
+import React, { useState, useEffect, useCallback } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { Snippet } from "../types/snippet";
+import SnippetCard from "./SnippetCard";
+import { useAuth } from "../contexts/AuthContext";
 
 interface SnippetGridProps {
-  selectedLanguage: string | null
-  selectedTag: string | null
+  selectedLanguages: string[];
+  selectedTags: string[];
 }
 
-const SnippetGrid: React.FC<SnippetGridProps> = ({ selectedLanguage, selectedTag }) => {
-  const [snippets, setSnippets] = useState<Snippet[]>([])
-  const [isAddingSnippet, setIsAddingSnippet] = useState(false)
-  const { user } = useAuth()
+const SnippetGrid: React.FC<SnippetGridProps> = ({
+  selectedLanguages,
+  selectedTags,
+}) => {
+  const [snippets, setSnippets] = useState<Snippet[]>([]);
+  const { user } = useAuth();
+
+  const fetchSnippets = useCallback(async () => {
+    if (!user) return;
+
+    const snippetsRef = collection(db, "snippets");
+    let q = query(snippetsRef, where("userId", "==", user.uid));
+
+    if (selectedLanguages.length > 0) {
+      q = query(q, where("language", "in", selectedLanguages));
+    }
+
+    const querySnapshot = await getDocs(q);
+    let fetchedSnippets = querySnapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
+    );
+
+    if (selectedTags.length > 0) {
+      fetchedSnippets = fetchedSnippets.filter((snippet) =>
+        snippet.tags.some((tag) => selectedTags.includes(tag))
+      );
+    }
+
+    setSnippets(fetchedSnippets);
+  }, [user, selectedLanguages, selectedTags]);
 
   useEffect(() => {
-    if (user) {
-      fetchSnippets()
-    }
-  }, [user, selectedLanguage, selectedTag])
+    fetchSnippets();
+  }, [fetchSnippets]);
 
-  const fetchSnippets = async () => {
-    if (!user) return
+  const handleUpdate = () => {
+    fetchSnippets();
+  };
 
-    const snippetsRef = collection(db, 'snippets')
-    let q = query(snippetsRef, where('userId', '==', user.uid))
-
-    if (selectedLanguage) {
-      q = query(q, where('language', '==', selectedLanguage))
-    }
-
-    if (selectedTag) {
-      q = query(q, where('tags', 'array-contains', selectedTag))
-    }
-
-    const querySnapshot = await getDocs(q)
-    const fetchedSnippets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet))
-    setSnippets(fetchedSnippets)
-  }
-
-  const handleAddSnippet = (newSnippet: Omit<Snippet, 'id' | 'userId'>) => {
-    // Implementation for adding a new snippet
-    console.log('Adding new snippet:', newSnippet)
-    setIsAddingSnippet(false)
-    fetchSnippets() // Refresh the snippets after adding
-  }
+  const handleDelete = () => {
+    fetchSnippets();
+  };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Snippets</h1>
-        <AddSnippetButton onClick={() => setIsAddingSnippet(true)} />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {snippets.map(snippet => (
-          <SnippetCard
-            key={snippet.id}
-            snippet={snippet}
-            onUpdate={() => fetchSnippets()}
-            onDelete={() => fetchSnippets()}
-          />
-        ))}
-      </div>
-      {isAddingSnippet && (
-        <AddSnippetForm onSave={handleAddSnippet} onClose={() => setIsAddingSnippet(false)} />
-      )}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {snippets.map((snippet) => (
+        <SnippetCard
+          key={snippet.id}
+          snippet={snippet}
+          onUpdate={handleUpdate}
+          onDelete={handleDelete}
+        />
+      ))}
     </div>
-  )
-}
+  );
+};
 
-export default SnippetGrid
+export default SnippetGrid;

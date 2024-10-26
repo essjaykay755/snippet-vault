@@ -1,60 +1,66 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { Highlight, themes } from 'prism-react-renderer'
-import { X } from 'lucide-react'
-import { Snippet } from '../types/snippet'
-import { addDoc, collection } from 'firebase/firestore'
-import { db } from '../lib/firebase'
-import { useAuth } from '../contexts/AuthContext'
+import React, { useState } from "react";
+import { Highlight, themes, Language } from "prism-react-renderer";
+import { X } from "lucide-react";
+import { Snippet } from "../types/snippet";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { useAuth } from "../contexts/AuthContext";
 
 interface AddSnippetFormProps {
-  onSave: (snippet: Omit<Snippet, 'id' | 'userId'>) => void
-  onClose: () => void
+  onSave: (snippet: Omit<Snippet, "id" | "userId">) => void;
+  onClose: () => void;
 }
 
 const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [language, setLanguage] = useState('')
-  const [tags, setTags] = useState('')
-  const { user } = useAuth()
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [language, setLanguage] = useState("");
+  const [tags, setTags] = useState("");
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
+    e.preventDefault();
+    if (!user) return;
 
-    const newSnippet: Omit<Snippet, 'id'> = {
+    const newSnippet: Omit<Snippet, "id"> = {
       title,
       content,
       language,
-      tags: tags.split(',').map(tag => tag.trim()),
+      tags: tags.split(",").map((tag) => tag.trim()),
       date: new Date().toISOString(),
-      userId: user.uid
-    }
+      userId: user.uid,
+    };
 
     try {
-      await addDoc(collection(db, 'snippets'), newSnippet)
-      onSave(newSnippet)
-      onClose()
+      await addDoc(collection(db, "snippets"), newSnippet);
+      onSave(newSnippet);
+      onClose();
     } catch (error) {
-      console.error('Error adding snippet:', error)
+      console.error("Error adding snippet:", error);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="p-6 flex justify-between items-center border-b">
           <h2 className="text-2xl font-semibold">Add New Snippet</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X size={24} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="flex-grow overflow-auto p-6">
           <div className="space-y-6">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Title
               </label>
               <input
@@ -67,7 +73,10 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
               />
             </div>
             <div>
-              <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="language"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Language
               </label>
               <select
@@ -86,7 +95,10 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
               </select>
             </div>
             <div>
-              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="content"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Content
               </label>
               <textarea
@@ -99,17 +111,36 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
               />
             </div>
             <div>
-              <label htmlFor="preview" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="preview"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Preview
               </label>
               <div className="border border-gray-300 rounded-md overflow-hidden">
-                <Highlight theme={themes.dracula} code={content || '// Your code here'} language={language as any}>
-                  {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                    <pre className={`${className} p-4`} style={{ ...style, minHeight: '200px' }}>
+                <Highlight
+                  theme={themes.dracula}
+                  code={content || "// Your code here"}
+                  language={language as Language}
+                >
+                  {({
+                    className,
+                    style,
+                    tokens,
+                    getLineProps,
+                    getTokenProps,
+                  }) => (
+                    <pre
+                      className={`${className} p-4`}
+                      style={{ ...style, minHeight: "200px" }}
+                    >
                       {tokens.map((line, i) => (
                         <div key={i} {...getLineProps({ line, key: i })}>
                           {line.map((token, key) => (
-                            <span key={key} {...getTokenProps({ token, key })} />
+                            <span
+                              key={key}
+                              {...getTokenProps({ token, key })}
+                            />
                           ))}
                         </div>
                       ))}
@@ -119,7 +150,10 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
               </div>
             </div>
             <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="tags"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Tags (comma-separated)
               </label>
               <input
@@ -150,7 +184,7 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AddSnippetForm
+export default AddSnippetForm;
