@@ -12,7 +12,7 @@ export default function Home() {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const handleAddSnippet = (snippet: Omit<Snippet, "id" | "userId">) => {
+  const handleAddSnippet = () => {
     // Handle adding the snippet (e.g., update state or refetch snippets)
     setIsAddSnippetModalOpen(false);
   };
@@ -36,8 +36,10 @@ export default function Home() {
         />
         {isAddSnippetModalOpen && (
           <AddSnippetForm
-            onSave={handleAddSnippet}
             onClose={() => setIsAddSnippetModalOpen(false)}
+            onSave={function (snippet: Omit<Snippet, "id" | "userId">): void {
+              throw new Error("Function not implemented.");
+            }}
           />
         )}
       </main>
