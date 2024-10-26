@@ -64,12 +64,12 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
   return (
     <>
       <motion.div
-        className={`rounded-lg shadow-md overflow-hidden cursor-pointer relative h-[300px]`}
+        className={`rounded-lg shadow-md overflow-hidden cursor-pointer relative h-[300px] ${bgColor}`}
         onClick={() => setIsModalOpen(true)}
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 300 }}
       >
-        <div className={`${bgColor} p-4 h-full flex flex-col`}>
+        <div className="p-4 h-full flex flex-col">
           <h2 className="text-xl font-semibold mb-2 text-gray-800">
             {snippet.title}
           </h2>
