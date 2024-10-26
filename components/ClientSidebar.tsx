@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
-import { X } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface ClientSidebarProps {
   onFilterChange: (languages: string[], tags: string[]) => void;
@@ -72,19 +72,28 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({ onFilterChange }) => {
     <div className="w-64 bg-white p-4 border-r">
       <h2 className="text-lg font-semibold mb-4">Filters</h2>
       <div className="mb-6">
-        <h3 className="text-md font-medium mb-2">Languages</h3>
-        {languages.map((language) => (
-          <div key={language} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              id={`language-${language}`}
-              checked={selectedLanguages.includes(language)}
-              onChange={() => handleLanguageChange(language)}
-              className="mr-2"
-            />
-            <label
-              htmlFor={`language-${language}`}
-              className="flex items-center"
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-md font-medium">Languages</h3>
+          {selectedLanguages.length > 0 && (
+            <button
+              onClick={clearFilters}
+              className="text-sm text-blue-500 hover:text-blue-700 flex items-center"
+            >
+              <RefreshCw size={14} className="mr-1" />
+              Clear
+            </button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {languages.map((language) => (
+            <button
+              key={language}
+              onClick={() => handleLanguageChange(language)}
+              className={`flex items-center w-full px-2 py-1 rounded-md transition-colors ${
+                selectedLanguages.includes(language)
+                  ? "bg-gray-200 text-gray-800"
+                  : "hover:bg-gray-100"
+              }`}
             >
               <span
                 className={`w-3 h-3 rounded-full mr-2 ${
@@ -92,34 +101,39 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({ onFilterChange }) => {
                 }`}
               ></span>
               {language}
-            </label>
-          </div>
-        ))}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="mb-6">
-        <h3 className="text-md font-medium mb-2">Tags</h3>
-        {tags.map((tag) => (
-          <div key={tag} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              id={`tag-${tag}`}
-              checked={selectedTags.includes(tag)}
-              onChange={() => handleTagChange(tag)}
-              className="mr-2"
-            />
-            <label htmlFor={`tag-${tag}`}>{tag}</label>
-          </div>
-        ))}
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-md font-medium">Tags</h3>
+          {selectedTags.length > 0 && (
+            <button
+              onClick={clearFilters}
+              className="text-sm text-blue-500 hover:text-blue-700 flex items-center"
+            >
+              <RefreshCw size={14} className="mr-1" />
+              Clear
+            </button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {tags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => handleTagChange(tag)}
+              className={`w-full px-2 py-1 rounded-md transition-colors ${
+                selectedTags.includes(tag)
+                  ? "bg-gray-200 text-gray-800"
+                  : "hover:bg-gray-100"
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
       </div>
-      {(selectedLanguages.length > 0 || selectedTags.length > 0) && (
-        <button
-          onClick={clearFilters}
-          className="flex items-center justify-center w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-        >
-          <X size={16} className="mr-2" />
-          Clear Filters
-        </button>
-      )}
     </div>
   );
 };
