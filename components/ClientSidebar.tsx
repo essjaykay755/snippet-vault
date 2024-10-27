@@ -4,8 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
-import { RefreshCw, Menu, X } from "lucide-react";
+import { RefreshCw, Menu, X, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "../contexts/AuthContext";
 
 interface ClientSidebarProps {
   onFilterChange: (languages: string[], tags: string[]) => void;
@@ -30,6 +31,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const { signOut } = useAuth();
 
   const fetchLanguagesAndTags = useCallback(async () => {
     const snippetsRef = collection(db, "snippets");
@@ -75,6 +77,14 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
     onFilterChange([], []);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <>
       <button
@@ -86,10 +96,10 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
       <div
         className={`fixed inset-y-0 left-0 transform ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } md:relative md:translate-x-0 transition duration-200 ease-in-out z-40 bg-white w-64 p-4 border-r overflow-y-auto`}
+        } md:relative md:translate-x-0 transition duration-200 ease-in-out z-40 bg-white w-64 p-4 border-r overflow-y-auto flex flex-col`}
       >
         <h2 className="text-lg font-semibold mb-4">Filters</h2>
-        <div className="mb-6">
+        <div className="mb-6 flex-grow">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-md font-medium">Languages</h3>
             {selectedLanguages.length > 0 && (
@@ -123,7 +133,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
             ))}
           </div>
         </div>
-        <div className="mb-6">
+        <div className="mb-6 flex-grow">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-md font-medium">Tags</h3>
             {selectedTags.length > 0 && (
@@ -152,14 +162,23 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
             ))}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 w-full p-4 text-center text-sm text-gray-500 border-t">
-          Made with ❤️ and ☕️ by{" "}
-          <Link
-            href="https://github.com/essjaykay755"
-            className="text-blue-500 hover:underline"
+        <div className="mt-auto">
+          <button
+            onClick={handleSignOut}
+            className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center justify-center mb-4"
           >
-            Subhojit Karmakar
-          </Link>
+            <LogOut size={18} className="mr-2" />
+            Sign Out
+          </button>
+          <div className="text-center text-sm text-gray-500 border-t pt-4">
+            Made with ❤️ and ☕️ by{" "}
+            <Link
+              href="https://github.com/essjaykay755"
+              className="text-blue-500 hover:underline"
+            >
+              Subhojit Karmakar
+            </Link>
+          </div>
         </div>
       </div>
     </>

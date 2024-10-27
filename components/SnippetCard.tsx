@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Highlight, themes, Language } from "prism-react-renderer";
 import { motion } from "framer-motion";
 import { Copy, Check, Link as LinkIcon } from "lucide-react";
@@ -30,8 +30,13 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
+  const [formattedDate, setFormattedDate] = useState("");
   const bgColor = languageColors[snippet.language] || "bg-gray-100";
   const router = useRouter();
+
+  useEffect(() => {
+    setFormattedDate(formatDate(snippet.date));
+  }, [snippet.date]);
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -90,9 +95,9 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
                   }}
                 >
                   {tokens.slice(0, 5).map((line, i) => (
-                    <div key={i} {...getLineProps({ line, key: i })}>
+                    <div key={i} {...getLineProps({ line })}>
                       {line.map((token, key) => (
-                        <span key={key} {...getTokenProps({ token, key })} />
+                        <span key={key} {...getTokenProps({ token })} />
                       ))}
                     </div>
                   ))}
@@ -102,9 +107,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
             </Highlight>
           </div>
           <div className="mt-2 flex justify-between items-center">
-            <span className="text-sm text-gray-600">
-              {formatDate(snippet.date)}
-            </span>
+            <span className="text-sm text-gray-600">{formattedDate}</span>
             <div className="flex space-x-2">
               <button
                 onClick={handleCopyLink}
