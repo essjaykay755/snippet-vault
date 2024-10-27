@@ -11,7 +11,7 @@ export default function AuthWrapper({
   children: React.ReactNode;
 }) {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  // const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
