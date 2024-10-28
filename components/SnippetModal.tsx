@@ -41,10 +41,15 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         title: editedSnippet.title,
         content: editedSnippet.content,
         language: editedSnippet.language,
-        tags: editedSnippet.tags,
+        tags: editedSnippet.tags.filter((tag) => tag.trim() !== ""),
       });
       onEdit();
       setIsEditing(false);
+      // Update the local snippet state to reflect changes
+      snippet = {
+        ...editedSnippet,
+        tags: editedSnippet.tags.filter((tag) => tag.trim() !== ""),
+      };
     } catch (error) {
       console.error("Error updating snippet:", error);
     }
@@ -73,7 +78,10 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
     const { value } = e.target;
     setEditedSnippet((prev) => ({
       ...prev,
-      tags: value.split(",").map((tag) => tag.trim()),
+      tags: value
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== ""),
     }));
   };
 
@@ -90,7 +98,19 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
       >
-        <div className="p-6 flex-grow overflow-y-auto">
+        <div className="p-4 border-b flex justify-between items-center">
+          <h2 className="text-2xl font-bold">
+            {isEditing ? "Edit Snippet" : snippet.title}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+            aria-label="Close"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <div className="flex-grow overflow-y-auto p-6">
           {isEditing ? (
             <div className="space-y-4">
               <input
@@ -129,41 +149,52 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
               />
             </div>
           ) : (
-            <div>
-              <h2 className="text-2xl font-bold mb-4">{snippet.title}</h2>
-              <Highlight
-                theme={themes.github}
-                code={snippet.content}
-                language={snippet.language}
-              >
-                {({
-                  className,
-                  style,
-                  tokens,
-                  getLineProps,
-                  getTokenProps,
-                }) => (
-                  <pre className={`${className} p-4 rounded-md`} style={style}>
-                    {tokens.map((line, i) => (
-                      <div key={i} {...getLineProps({ line, key: i })}>
-                        {line.map((token, key) => (
-                          <span key={key} {...getTokenProps({ token, key })} />
-                        ))}
-                      </div>
-                    ))}
-                  </pre>
-                )}
-              </Highlight>
-              <div className="mt-4">
-                <strong>Language:</strong> {snippet.language}
+            <div className="h-full flex flex-col">
+              <div className="flex-grow">
+                <Highlight
+                  theme={themes.github}
+                  code={snippet.content}
+                  language={snippet.language}
+                >
+                  {({
+                    className,
+                    style,
+                    tokens,
+                    getLineProps,
+                    getTokenProps,
+                  }) => (
+                    <pre
+                      className={`${className} p-4 rounded-md h-full`}
+                      style={style}
+                    >
+                      {tokens.map((line, i) => (
+                        <div key={i} {...getLineProps({ line, key: i })}>
+                          {line.map((token, key) => (
+                            <span
+                              key={key}
+                              {...getTokenProps({ token, key })}
+                            />
+                          ))}
+                        </div>
+                      ))}
+                    </pre>
+                  )}
+                </Highlight>
               </div>
-              <div className="mt-2">
-                <strong>Tags:</strong> {snippet.tags.join(", ")}
+              <div className="mt-4 flex justify-between items-center">
+                <div>
+                  <strong>Language:</strong> {snippet.language}
+                </div>
+                {snippet.tags && snippet.tags.length > 0 && (
+                  <div>
+                    <strong>Tags:</strong> {snippet.tags.join(", ")}
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
-        <div className="p-6 flex-shrink-0 border-t flex justify-between items-center">
+        <div className="p-4 border-t flex justify-between items-center">
           <div className="flex space-x-2">
             {isEditing ? (
               <>
