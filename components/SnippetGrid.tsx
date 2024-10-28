@@ -5,7 +5,9 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
 import SnippetCard from "./SnippetCard";
+import AddSnippetCard from "./AddSnippetCard";
 import { useAuth } from "../contexts/AuthContext";
+import AddSnippetForm from "./AddSnippetForm";
 
 interface SnippetGridProps {
   selectedLanguages: string[];
@@ -19,6 +21,7 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
   const { user } = useAuth();
 
   const fetchSnippets = useCallback(async () => {
@@ -78,25 +81,29 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
     return <div className="text-center py-8 text-red-500">{error}</div>;
   }
 
-  if (snippets.length === 0) {
-    return (
-      <div className="text-center py-8">
-        No snippets found. Try adding some!
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {snippets.map((snippet) => (
-        <SnippetCard
-          key={snippet.id}
-          snippet={snippet}
-          onUpdate={handleUpdate}
-          onDelete={handleDelete}
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AddSnippetCard onClick={() => setIsAddSnippetModalOpen(true)} />
+        {snippets.map((snippet) => (
+          <SnippetCard
+            key={snippet.id}
+            snippet={snippet}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
+      {isAddSnippetModalOpen && (
+        <AddSnippetForm
+          onSave={() => {
+            setIsAddSnippetModalOpen(false);
+            fetchSnippets();
+          }}
+          onClose={() => setIsAddSnippetModalOpen(false)}
         />
-      ))}
-    </div>
+      )}
+    </>
   );
 };
 

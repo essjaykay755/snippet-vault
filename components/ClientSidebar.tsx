@@ -15,11 +15,11 @@ interface ClientSidebarProps {
 }
 
 const languageColors: { [key: string]: string } = {
-  javascript: "bg-yellow-400",
-  python: "bg-blue-500",
-  css: "bg-pink-500",
-  html: "bg-orange-500",
-  typescript: "bg-blue-600",
+  javascript: "bg-yellow-100",
+  python: "bg-blue-100",
+  css: "bg-pink-100",
+  html: "bg-orange-100",
+  typescript: "bg-blue-200",
 };
 
 const ClientSidebar: React.FC<ClientSidebarProps> = ({
@@ -90,6 +90,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
       <button
         onClick={onToggle}
         className="fixed top-4 left-4 z-50 md:hidden bg-white p-2 rounded-full shadow-md"
+        aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -98,6 +99,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0 transition duration-200 ease-in-out z-40 bg-white w-64 p-4 border-r overflow-y-auto flex flex-col`}
       >
+        <h1 className="text-2xl font-bold mb-6 text-center">SnippetVault</h1>
         <h2 className="text-lg font-semibold mb-4">Filters</h2>
         <div className="mb-6 flex-grow">
           <div className="flex justify-between items-center mb-2">
