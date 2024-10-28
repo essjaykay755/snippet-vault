@@ -1,16 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { FcGoogle } from "react-icons/fc";
 
 export default function SignIn() {
   const { signInWithGoogle } = useAuth();
+  const [error, setError] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
     try {
+      setError(null);
       await signInWithGoogle();
     } catch (error) {
       console.error("Error signing in with Google:", error);
+      setError("Failed to sign in. Please try again.");
     }
   };
 
@@ -22,6 +26,14 @@ export default function SignIn() {
             Sign in to SnippetVault
           </h2>
         </div>
+        {error && (
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
         <div>
           <button
             onClick={handleGoogleSignIn}

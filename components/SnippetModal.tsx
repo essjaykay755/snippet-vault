@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Highlight, themes } from "prism-react-renderer";
 import { Maximize2, Edit, Trash2, Copy, Check, X, Save } from "lucide-react";
@@ -27,6 +27,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
   const [editedSnippet, setEditedSnippet] = useState<Snippet>(snippet);
   const [isCopied, setIsCopied] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(snippet.content);
@@ -36,6 +37,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
 
   const handleSave = async () => {
     try {
+      setError(null);
       const snippetRef = doc(db, "snippets", snippet.id);
       await updateDoc(snippetRef, {
         title: editedSnippet.title,
@@ -45,23 +47,21 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
       });
       onEdit();
       setIsEditing(false);
-      // Update the local snippet state to reflect changes
-      snippet = {
-        ...editedSnippet,
-        tags: editedSnippet.tags.filter((tag) => tag.trim() !== ""),
-      };
     } catch (error) {
       console.error("Error updating snippet:", error);
+      setError("Failed to update snippet. Please try again.");
     }
   };
 
   const handleDelete = async () => {
     try {
+      setError(null);
       await deleteDoc(doc(db, "snippets", snippet.id));
       onDelete();
       onClose();
     } catch (error) {
       console.error("Error deleting snippet:", error);
+      setError("Failed to delete snippet. Please try again.");
     }
   };
 
@@ -84,6 +84,32 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         .filter((tag) => tag !== ""),
     }));
   };
+
+  const renderHighlightedCode = useCallback(
+    () => (
+      <Highlight
+        theme={themes.github}
+        code={snippet.content}
+        language={snippet.language}
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <pre
+            className={`${className} p-4 rounded-md h-full overflow-auto`}
+            style={style}
+          >
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({ line, key: i })}>
+                {line.map((token, key) => (
+                  <span key={key} {...getTokenProps({ token, key })} />
+                ))}
+              </div>
+            ))}
+          </pre>
+        )}
+      </Highlight>
+    ),
+    [snippet.content, snippet.language]
+  );
 
   return (
     <motion.div
@@ -110,6 +136,11 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
             <X size={24} />
           </button>
         </div>
+        {error && (
+          <div className="p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
+            <p>{error}</p>
+          </div>
+        )}
         <div className="flex-grow overflow-y-auto p-6">
           {isEditing ? (
             <div className="space-y-4">
@@ -138,6 +169,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 <option value="python">Python</option>
                 <option value="html">HTML</option>
                 <option value="css">CSS</option>
+                <option value="typescript">TypeScript</option>
               </select>
               <input
                 type="text"
@@ -150,37 +182,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              <div className="flex-grow">
-                <Highlight
-                  theme={themes.github}
-                  code={snippet.content}
-                  language={snippet.language}
-                >
-                  {({
-                    className,
-                    style,
-                    tokens,
-                    getLineProps,
-                    getTokenProps,
-                  }) => (
-                    <pre
-                      className={`${className} p-4 rounded-md h-full`}
-                      style={style}
-                    >
-                      {tokens.map((line, i) => (
-                        <div key={i} {...getLineProps({ line, key: i })}>
-                          {line.map((token, key) => (
-                            <span
-                              key={key}
-                              {...getTokenProps({ token, key })}
-                            />
-                          ))}
-                        </div>
-                      ))}
-                    </pre>
-                  )}
-                </Highlight>
-              </div>
+              <div className="flex-grow">{renderHighlightedCode()}</div>
               <div className="mt-4 flex justify-between items-center">
                 <div>
                   <strong>Language:</strong> {snippet.language}
