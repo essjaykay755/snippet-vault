@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Highlight, themes, Language } from "prism-react-renderer";
+import { Highlight, themes } from "prism-react-renderer";
 import { Maximize2, Edit, Trash2, Copy, Check, X, Save } from "lucide-react";
 import { Snippet } from "../types/snippet";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
@@ -90,8 +90,79 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
       >
-        {/* ... (rest of the modal content remains the same) */}
-
+        <div className="p-6 flex-grow overflow-y-auto">
+          {isEditing ? (
+            <div className="space-y-4">
+              <input
+                type="text"
+                name="title"
+                value={editedSnippet.title}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md"
+                placeholder="Snippet Title"
+              />
+              <textarea
+                name="content"
+                value={editedSnippet.content}
+                onChange={handleInputChange}
+                className="w-full h-64 px-3 py-2 border rounded-md font-mono"
+                placeholder="Snippet Content"
+              />
+              <select
+                name="language"
+                value={editedSnippet.language}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md"
+              >
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+              </select>
+              <input
+                type="text"
+                name="tags"
+                value={editedSnippet.tags.join(", ")}
+                onChange={handleTagsChange}
+                className="w-full px-3 py-2 border rounded-md"
+                placeholder="Tags (comma-separated)"
+              />
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-2xl font-bold mb-4">{snippet.title}</h2>
+              <Highlight
+                theme={themes.github}
+                code={snippet.content}
+                language={snippet.language}
+              >
+                {({
+                  className,
+                  style,
+                  tokens,
+                  getLineProps,
+                  getTokenProps,
+                }) => (
+                  <pre className={`${className} p-4 rounded-md`} style={style}>
+                    {tokens.map((line, i) => (
+                      <div key={i} {...getLineProps({ line, key: i })}>
+                        {line.map((token, key) => (
+                          <span key={key} {...getTokenProps({ token, key })} />
+                        ))}
+                      </div>
+                    ))}
+                  </pre>
+                )}
+              </Highlight>
+              <div className="mt-4">
+                <strong>Language:</strong> {snippet.language}
+              </div>
+              <div className="mt-2">
+                <strong>Tags:</strong> {snippet.tags.join(", ")}
+              </div>
+            </div>
+          )}
+        </div>
         <div className="p-6 flex-shrink-0 border-t flex justify-between items-center">
           <div className="flex space-x-2">
             {isEditing ? (
