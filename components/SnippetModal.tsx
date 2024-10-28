@@ -97,13 +97,17 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
             className={`${className} p-4 rounded-md h-full overflow-auto`}
             style={style}
           >
-            {tokens.map((line, i) => (
-              <div key={i} {...getLineProps({ line, key: i })}>
-                {line.map((token, key) => (
-                  <span key={key} {...getTokenProps({ token, key })} />
-                ))}
-              </div>
-            ))}
+            {tokens.map((line, i) => {
+              const lineProps = getLineProps({ line, key: i });
+              return (
+                <div key={i} {...lineProps}>
+                  {line.map((token, key) => {
+                    const tokenProps = getTokenProps({ token, key });
+                    return <span key={key} {...tokenProps} />;
+                  })}
+                </div>
+              );
+            })}
           </pre>
         )}
       </Highlight>
@@ -196,68 +200,70 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
             </div>
           )}
         </div>
-        <div className="p-4 border-t flex justify-between items-center">
-          <div className="flex space-x-2">
-            {isEditing ? (
-              <>
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center"
-                >
-                  <Save size={20} className="mr-2" />
-                  Save
-                </button>
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors flex items-center"
-                >
-                  <X size={20} className="mr-2" />
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center"
-                >
-                  <Edit size={20} className="mr-2" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => setShowDeleteConfirmation(true)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center"
-                >
-                  <Trash2 size={20} className="mr-2" />
-                  Delete
-                </button>
-              </>
-            )}
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={handleCopy}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center"
-            >
-              {isCopied ? (
+        <div className="p-4 border-t">
+          <div className="flex flex-wrap gap-2 justify-between">
+            <div className="flex flex-wrap gap-2">
+              {isEditing ? (
                 <>
-                  <Check size={20} className="mr-2" />
-                  Copied!
+                  <button
+                    onClick={handleSave}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center text-sm"
+                  >
+                    <Save size={16} className="mr-2" />
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors flex items-center text-sm"
+                  >
+                    <X size={16} className="mr-2" />
+                    Cancel
+                  </button>
                 </>
               ) : (
                 <>
-                  <Copy size={20} className="mr-2" />
-                  Copy
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center text-sm"
+                  >
+                    <Edit size={16} className="mr-2" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirmation(true)}
+                    className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center text-sm"
+                  >
+                    <Trash2 size={16} className="mr-2" />
+                    Delete
+                  </button>
                 </>
               )}
-            </button>
-            <button
-              onClick={onFullScreen}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center"
-            >
-              <Maximize2 size={20} className="mr-2" />
-              Full Screen
-            </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleCopy}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center text-sm"
+              >
+                {isCopied ? (
+                  <>
+                    <Check size={16} className="mr-2" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy size={16} className="mr-2" />
+                    Copy
+                  </>
+                )}
+              </button>
+              <button
+                onClick={onFullScreen}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center text-sm"
+              >
+                <Maximize2 size={16} className="mr-2" />
+                Full Screen
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
