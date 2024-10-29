@@ -4,7 +4,16 @@ import React, { useState, useEffect, useCallback } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
-import { RefreshCw, Menu, X, LogOut } from "lucide-react";
+import {
+  RefreshCw,
+  Menu,
+  X,
+  LogOut,
+  Plus,
+  Info,
+  Shield,
+  FileText,
+} from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -12,6 +21,7 @@ interface ClientSidebarProps {
   onFilterChange: (languages: string[], tags: string[]) => void;
   isOpen: boolean;
   onToggle: () => void;
+  onAddSnippet: () => void;
 }
 
 const languageColors: { [key: string]: string } = {
@@ -26,6 +36,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   onFilterChange,
   isOpen,
   onToggle,
+  onAddSnippet,
 }) => {
   const [languages, setLanguages] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -103,6 +114,13 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
         } md:relative md:translate-x-0 transition duration-200 ease-in-out z-40 bg-white w-64 p-4 border-r overflow-y-auto flex flex-col`}
       >
         <h1 className="text-2xl font-bold mb-6 text-center">SnippetVault</h1>
+        <button
+          onClick={onAddSnippet}
+          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
+        >
+          <Plus size={20} className="mr-2" />
+          Add New Snippet
+        </button>
         <h2 className="text-lg font-semibold mb-4">Filters</h2>
         <div className="mb-6 flex-grow">
           <div className="flex justify-between items-center mb-2">
@@ -178,6 +196,29 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
             Sign Out
           </button>
           <div className="text-center text-sm text-gray-500 border-t pt-4">
+            <div className="flex justify-center space-x-4 mb-2">
+              <Link
+                href="/about"
+                className="text-blue-500 hover:underline flex items-center"
+              >
+                <Info size={14} className="mr-1" />
+                About
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-blue-500 hover:underline flex items-center"
+              >
+                <Shield size={14} className="mr-1" />
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-blue-500 hover:underline flex items-center"
+              >
+                <FileText size={14} className="mr-1" />
+                Terms
+              </Link>
+            </div>
             Made with ❤️ and ☕️ by{" "}
             <Link
               href="https://github.com/essjaykay755"

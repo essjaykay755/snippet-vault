@@ -3,14 +3,13 @@
 import React, { useState } from "react";
 import ClientSidebar from "../components/ClientSidebar";
 import SnippetGrid from "../components/SnippetGrid";
-import AddSnippetButton from "../components/AddSnippetButton";
 import AddSnippetForm from "../components/AddSnippetForm";
 
 export default function Home() {
-  const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
 
   const handleFilterChange = (languages: string[], tags: string[]) => {
     setSelectedLanguages(languages);
@@ -22,28 +21,28 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
       <ClientSidebar
         onFilterChange={handleFilterChange}
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
+        onAddSnippet={() => setIsAddSnippetModalOpen(true)}
       />
-      <main className="flex-1 p-8 overflow-auto">
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-800">Your Snippets</h1>
-          <AddSnippetButton onClick={() => setIsAddSnippetModalOpen(true)} />
+      <main className="flex-1 p-4 md:p-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Your Snippets</h1>
         </div>
         <SnippetGrid
           selectedLanguages={selectedLanguages}
           selectedTags={selectedTags}
         />
-        {isAddSnippetModalOpen && (
-          <AddSnippetForm
-            onSave={() => setIsAddSnippetModalOpen(false)}
-            onClose={() => setIsAddSnippetModalOpen(false)}
-          />
-        )}
       </main>
+      {isAddSnippetModalOpen && (
+        <AddSnippetForm
+          onSave={() => setIsAddSnippetModalOpen(false)}
+          onClose={() => setIsAddSnippetModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
