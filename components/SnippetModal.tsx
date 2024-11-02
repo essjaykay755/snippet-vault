@@ -88,7 +88,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
   const renderHighlightedCode = useCallback(
     () => (
       <Highlight
-        theme={themes.github}
+        theme={themes.nightOwl}
         code={snippet.content}
         language={snippet.language}
       >
@@ -123,25 +123,25 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] overflow-hidden flex flex-col"
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl h-[90vh] overflow-hidden flex flex-col"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
       >
-        <div className="p-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold truncate">
+        <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+          <h2 className="text-xl font-bold truncate text-gray-800 dark:text-gray-200">
             {isEditing ? "Edit Snippet" : snippet.title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
             aria-label="Close"
           >
-            <X size={20} />
+            <X size={20} className="text-gray-600 dark:text-gray-400" />
           </button>
         </div>
         {error && (
-          <div className="p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
+          <div className="p-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
             <p>{error}</p>
           </div>
         )}
@@ -153,21 +153,21 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 name="title"
                 value={editedSnippet.title}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Snippet Title"
               />
               <textarea
                 name="content"
                 value={editedSnippet.content}
                 onChange={handleInputChange}
-                className="w-full h-64 px-3 py-2 border rounded-md font-mono"
+                className="w-full h-64 px-3 py-2 border rounded-md font-mono dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Snippet Content"
               />
               <select
                 name="language"
                 value={editedSnippet.language}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
                 <option value="javascript">JavaScript</option>
                 <option value="python">Python</option>
@@ -180,14 +180,14 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 name="tags"
                 value={editedSnippet.tags.join(", ")}
                 onChange={handleTagsChange}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Tags (comma-separated)"
               />
             </div>
           ) : (
             <div className="h-full flex flex-col">
               <div className="flex-grow">{renderHighlightedCode()}</div>
-              <div className="mt-4 text-sm">
+              <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                 <div>
                   <strong>Language:</strong> {snippet.language}
                 </div>
@@ -200,7 +200,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
             </div>
           )}
         </div>
-        <div className="p-4 border-t">
+        <div className="p-4 border-t dark:border-gray-700">
           <div className="grid grid-cols-2 gap-2">
             {isEditing ? (
               <>
@@ -213,7 +213,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors flex items-center justify-center text-sm"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors flex items-center justify-center text-sm dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 >
                   <X size={16} className="mr-2" />
                   Cancel
@@ -237,7 +237,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 </button>
                 <button
                   onClick={handleCopy}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center text-sm"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center text-sm dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
                   {isCopied ? (
                     <>
@@ -253,7 +253,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 </button>
                 <button
                   onClick={onFullScreen}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center text-sm"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center text-sm dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
                   <Maximize2 size={16} className="mr-2" />
                   Full Screen
@@ -266,16 +266,18 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
 
       {showDeleteConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
-          <div className="bg-white p-6 rounded-lg shadow-xl">
-            <h3 className="text-lg font-semibold mb-4">Confirm Deletion</h3>
-            <p className="mb-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
+              Confirm Deletion
+            </h3>
+            <p className="mb-4 text-gray-600 dark:text-gray-400">
               Are you sure you want to delete this snippet? This action cannot
               be undone.
             </p>
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setShowDeleteConfirmation(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
               >
                 Cancel
               </button>

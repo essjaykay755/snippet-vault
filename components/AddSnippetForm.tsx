@@ -44,12 +44,14 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="p-6 flex justify-between items-center border-b">
-          <h2 className="text-2xl font-semibold">Add New Snippet</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="p-6 flex justify-between items-center border-b dark:border-gray-700">
+          <h2 className="text-2xl  font-semibold text-gray-800 dark:text-gray-200">
+            Add New Snippet
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
             <X size={24} />
           </button>
@@ -59,7 +61,7 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
             <div>
               <label
                 htmlFor="title"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
                 Title
               </label>
@@ -68,14 +70,14 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               />
             </div>
             <div>
               <label
                 htmlFor="language"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
                 Language
               </label>
@@ -83,7 +85,7 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 id="language"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               >
                 <option value="">Select a language</option>
@@ -97,7 +99,7 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
             <div>
               <label
                 htmlFor="content"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
                 Content
               </label>
@@ -106,20 +108,20 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={10}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               />
             </div>
             <div>
               <label
                 htmlFor="preview"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
                 Preview
               </label>
-              <div className="border border-gray-300 rounded-md overflow-hidden">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
                 <Highlight
-                  theme={themes.dracula}
+                  theme={themes.nightOwl}
                   code={content || "// Your code here"}
                   language={language as Language}
                 >
@@ -152,7 +154,7 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
             <div>
               <label
                 htmlFor="tags"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
                 Tags (comma-separated)
               </label>
@@ -161,23 +163,23 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 id="tags"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
           </div>
         </form>
-        <div className="p-6 border-t flex justify-end space-x-2">
+        <div className="p-6 border-t dark:border-gray-700 flex justify-end space-x-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
           <button
             type="submit"
             onClick={handleSubmit}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             Save
           </button>

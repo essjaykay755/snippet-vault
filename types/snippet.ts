@@ -3,7 +3,7 @@ export interface Snippet {
   title: string;
   content: string;
   language: string;
-  date: string;
   tags: string[];
+  date: string;
   userId: string;
 }
