@@ -9,7 +9,7 @@ import { db } from "../lib/firebase";
 import { useAuth } from "../contexts/AuthContext";
 
 interface AddSnippetFormProps {
-  onSave: (snippet: Omit<Snippet, "id" | "userId">) => void;
+  onSave: (snippet: Snippet) => void;
   onClose: () => void;
 }
 
@@ -34,8 +34,8 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
     };
 
     try {
-      await addDoc(collection(db, "snippets"), newSnippet);
-      onSave(newSnippet);
+      const docRef = await addDoc(collection(db, "snippets"), newSnippet);
+      onSave({ ...newSnippet, id: docRef.id });
       onClose();
     } catch (error) {
       console.error("Error adding snippet:", error);
@@ -46,7 +46,7 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="p-6 flex justify-between items-center border-b dark:border-gray-700">
-          <h2 className="text-2xl  font-semibold text-gray-800 dark:text-gray-200">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
             Add New Snippet
           </h2>
           <button

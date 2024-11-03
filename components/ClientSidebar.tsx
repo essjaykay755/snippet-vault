@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
 import {
@@ -47,22 +47,17 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const { user, signOut } = useAuth();
 
-  // Initialize dark mode based on system preference
   useEffect(() => {
-    // Check if window is defined (client-side)
     if (typeof window !== "undefined") {
-      // Check system preference
       const systemPrefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)"
       ).matches;
       setIsDarkMode(systemPrefersDark);
 
-      // Apply initial dark mode class
       if (systemPrefersDark) {
         document.documentElement.classList.add("dark");
       }
 
-      // Listen for system preference changes
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = (e: MediaQueryListEvent) => {
         setIsDarkMode(e.matches);
@@ -83,30 +78,30 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
     document.documentElement.classList.toggle("dark");
   };
 
-  const fetchLanguagesAndTags = useCallback(async () => {
+  useEffect(() => {
     if (!user) return;
 
     const snippetsRef = collection(db, "snippets");
     const q = query(snippetsRef, where("userId", "==", user.uid));
-    const snippetDocs = await getDocs(q);
-    const snippets: Snippet[] = snippetDocs.docs.map(
-      (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
-    );
 
-    const uniqueLanguages = Array.from(
-      new Set(snippets.map((snippet) => snippet.language))
-    );
-    const uniqueTags = Array.from(
-      new Set(snippets.flatMap((snippet) => snippet.tags || []))
-    ).filter((tag) => tag.trim() !== "");
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const snippets: Snippet[] = querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
+      );
 
-    setLanguages(uniqueLanguages);
-    setTags(uniqueTags);
+      const uniqueLanguages = Array.from(
+        new Set(snippets.map((snippet) => snippet.language))
+      );
+      const uniqueTags = Array.from(
+        new Set(snippets.flatMap((snippet) => snippet.tags || []))
+      ).filter((tag) => tag.trim() !== "");
+
+      setLanguages(uniqueLanguages);
+      setTags(uniqueTags);
+    });
+
+    return () => unsubscribe();
   }, [user]);
-
-  useEffect(() => {
-    fetchLanguagesAndTags();
-  }, [fetchLanguagesAndTags]);
 
   const handleLanguageChange = (language: string) => {
     const updatedLanguages = selectedLanguages.includes(language)
