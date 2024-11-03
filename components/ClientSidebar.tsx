@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
@@ -73,11 +73,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
     }
   }, []);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle("dark");
-  };
-
   useEffect(() => {
     if (!user) return;
 
@@ -102,6 +97,11 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
 
     return () => unsubscribe();
   }, [user]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle("dark");
+  };
 
   const handleLanguageChange = (language: string) => {
     const updatedLanguages = selectedLanguages.includes(language)
@@ -264,13 +264,15 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
                 Terms
               </Link>
             </div>
-            Made with ❤️ and ☕️ by{" "}
-            <Link
-              href="https://github.com/essjaykay755"
-              className="text-blue-500 dark:text-blue-400 hover:underline"
-            >
-              Subhojit Karmakar
-            </Link>
+            <div>
+              Made with ❤️ and ☕️ by{" "}
+              <Link
+                href="https://github.com/essjaykay755"
+                className="text-blue-500 dark:text-blue-400 hover:underline"
+              >
+                Subhojit Karmakar
+              </Link>
+            </div>
           </div>
         </div>
       </div>
