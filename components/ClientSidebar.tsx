@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-// import { collection, query, where, onSnapshot } from "firebase/firestore";
-// import { db } from "../lib/firebase";
-import { Snippet } from "../types/snippet";
 import {
   RefreshCw,
   Menu,
@@ -18,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
+import { Snippet } from "../types/snippet";
 
 interface ClientSidebarProps {
   onFilterChange: (languages: string[], tags: string[]) => void;
@@ -47,7 +45,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
