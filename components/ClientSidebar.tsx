@@ -24,6 +24,7 @@ interface ClientSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   onAddSnippet: () => void;
+  snippets: Snippet[];
 }
 
 const languageColors: { [key: string]: string } = {
@@ -39,6 +40,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   isOpen,
   onToggle,
   onAddSnippet,
+  snippets,
 }) => {
   const [languages, setLanguages] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -74,29 +76,16 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    const uniqueLanguages = Array.from(
+      new Set(snippets.map((snippet) => snippet.language))
+    );
+    const uniqueTags = Array.from(
+      new Set(snippets.flatMap((snippet) => snippet.tags || []))
+    ).filter((tag) => tag.trim() !== "");
 
-    const snippetsRef = collection(db, "snippets");
-    const q = query(snippetsRef, where("userId", "==", user.uid));
-
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const snippets: Snippet[] = querySnapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
-      );
-
-      const uniqueLanguages = Array.from(
-        new Set(snippets.map((snippet) => snippet.language))
-      );
-      const uniqueTags = Array.from(
-        new Set(snippets.flatMap((snippet) => snippet.tags || []))
-      ).filter((tag) => tag.trim() !== "");
-
-      setLanguages(uniqueLanguages);
-      setTags(uniqueTags);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
+    setLanguages(uniqueLanguages);
+    setTags(uniqueTags);
+  }, [snippets]);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);

@@ -18,17 +18,44 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
   const [content, setContent] = useState("");
   const [language, setLanguage] = useState("");
   const [tags, setTags] = useState("");
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const { user } = useAuth();
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!title.trim()) {
+      newErrors.title = "Title is required";
+    }
+
+    if (!content.trim()) {
+      newErrors.content = "Content is required";
+    }
+
+    if (!language) {
+      newErrors.language = "Language is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
+    if (!validateForm()) {
+      return;
+    }
+
     const newSnippet: Omit<Snippet, "id"> = {
-      title,
-      content,
+      title: title.trim(),
+      content: content.trim(),
       language,
-      tags: tags.split(",").map((tag) => tag.trim()),
+      tags: tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
       date: new Date().toISOString(),
       userId: user.uid,
     };
@@ -70,9 +97,14 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className={`w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                  errors.title ? "border-red-500" : "border-gray-300"
+                }`}
                 required
               />
+              {errors.title && (
+                <p className="mt-1 text-sm text-red-500">{errors.title}</p>
+              )}
             </div>
             <div>
               <label
@@ -85,7 +117,9 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 id="language"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className={`w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                  errors.language ? "border-red-500" : "border-gray-300"
+                }`}
                 required
               >
                 <option value="">Select a language</option>
@@ -95,6 +129,9 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 <option value="html">HTML</option>
                 <option value="typescript">TypeScript</option>
               </select>
+              {errors.language && (
+                <p className="mt-1 text-sm text-red-500">{errors.language}</p>
+              )}
             </div>
             <div>
               <label
@@ -108,9 +145,14 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={10}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className={`w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                  errors.content ? "border-red-500" : "border-gray-300"
+                }`}
                 required
               />
+              {errors.content && (
+                <p className="mt-1 text-sm text-red-500">{errors.content}</p>
+              )}
             </div>
             <div>
               <label
