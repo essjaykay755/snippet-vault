@@ -6,4 +6,5 @@ export interface Snippet {
   tags: string[];
   date: string;
   userId: string;
+  favorite: boolean;
 }

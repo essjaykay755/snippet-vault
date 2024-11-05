@@ -1,71 +1,78 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import ClientSidebar from "../components/ClientSidebar";
 import SnippetGrid from "../components/SnippetGrid";
-import AddSnippetForm from "../components/AddSnippetForm";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import SignIn from "../components/SignIn";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { useAuth } from "../contexts/AuthContext";
 import { Snippet } from "../types/snippet";
+import { Menu } from "lucide-react";
 
 export default function Home() {
+  const { user } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   const [snippets, setSnippets] = useState<Snippet[]>([]);
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) return;
+    const fetchSnippets = async () => {
+      if (user) {
+        const snippetsRef = collection(db, "snippets");
+        const q = query(snippetsRef, where("userId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+        const fetchedSnippets = querySnapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
+        );
+        setSnippets(fetchedSnippets);
+      }
+    };
 
-    const snippetsRef = collection(db, "snippets");
-    const q = query(snippetsRef, where("userId", "==", user.uid));
-
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const fetchedSnippets = querySnapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
-      );
-      setSnippets(fetchedSnippets);
-    });
-
-    return () => unsubscribe();
+    fetchSnippets();
   }, [user]);
 
-  const handleFilterChange = (languages: string[], tags: string[]) => {
+  const handleFilterChange = (
+    languages: string[],
+    tags: string[],
+    favorites: boolean
+  ) => {
     setSelectedLanguages(languages);
     setSelectedTags(tags);
+    setShowFavorites(favorites);
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  if (!user) {
+    return <SignIn />;
+  }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <ClientSidebar
         onFilterChange={handleFilterChange}
         isOpen={isSidebarOpen}
-        onToggle={toggleSidebar}
-        onAddSnippet={() => setIsAddSnippetModalOpen(true)}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        onAddSnippet={() => {}}
         snippets={snippets}
       />
-      <main className="flex-1 p-4 md:p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Your Snippets</h1>
+      <main className="flex-1 p-4 overflow-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">My Snippets</h1>
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="md:hidden p-2 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-md"
+          >
+            <Menu size={24} />
+          </button>
         </div>
         <SnippetGrid
           selectedLanguages={selectedLanguages}
           selectedTags={selectedTags}
+          showFavorites={showFavorites}
         />
       </main>
-      {isAddSnippetModalOpen && (
-        <AddSnippetForm
-          onSave={() => setIsAddSnippetModalOpen(false)}
-          onClose={() => setIsAddSnippetModalOpen(false)}
-        />
-      )}
     </div>
   );
 }

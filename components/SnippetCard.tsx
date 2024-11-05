@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Highlight, themes, Language } from "prism-react-renderer";
 import { motion } from "framer-motion";
-import { Copy, Check, Link as LinkIcon } from "lucide-react";
+import { Copy, Check, Link as LinkIcon, Star } from "lucide-react";
 import SnippetModal from "./SnippetModal";
 import { useRouter } from "next/navigation";
 import { Snippet } from "../types/snippet";
@@ -12,6 +12,7 @@ interface SnippetCardProps {
   snippet: Snippet;
   onUpdate: () => void;
   onDelete: () => void;
+  onToggleFavorite: (snippetId: string, favorite: boolean) => void;
 }
 
 const languageColors: { [key: string]: string } = {
@@ -26,6 +27,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
   snippet,
   onUpdate,
   onDelete,
+  onToggleFavorite,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -57,6 +59,11 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
     router.push(`/snippet/${snippet.id}`);
   };
 
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite(snippet.id, !snippet.favorite);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `Created on ${date.toLocaleDateString("en-US", {
@@ -75,9 +82,27 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
         transition={{ type: "spring", stiffness: 300 }}
       >
         <div className="p-4 h-full flex flex-col">
-          <h2 className="text-xl font-semibold mb-2 text-gray-800">
-            {snippet.title}
-          </h2>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-xl font-semibold text-gray-800">
+              {snippet.title}
+            </h2>
+            <button
+              onClick={handleToggleFavorite}
+              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+              title={
+                snippet.favorite ? "Remove from favorites" : "Add to favorites"
+              }
+            >
+              <Star
+                size={20}
+                className={
+                  snippet.favorite
+                    ? "text-yellow-500 fill-current"
+                    : "text-gray-400"
+                }
+              />
+            </button>
+          </div>
           <div className="flex-grow overflow-hidden">
             <Highlight
               theme={themes.github}
@@ -146,6 +171,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
             setIsModalOpen(false);
           }}
           onFullScreen={handleOpenFullView}
+          onToggleFavorite={onToggleFavorite}
         />
       )}
     </>

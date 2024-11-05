@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Highlight, themes, Language } from "prism-react-renderer";
-import { Maximize2, Edit, Trash2, Copy, Check, X } from "lucide-react";
+import { Maximize2, Edit, Trash2, Copy, Check, X, Star } from "lucide-react";
 import { Snippet } from "../types/snippet";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -14,6 +14,7 @@ interface SnippetModalProps {
   onEdit: (updatedSnippet: Snippet) => void;
   onDelete: (snippetId: string) => void;
   onFullScreen: () => void;
+  onToggleFavorite: (snippetId: string, favorite: boolean) => void;
   children?: React.ReactNode;
 }
 
@@ -23,6 +24,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
   onEdit,
   onDelete,
   onFullScreen,
+  onToggleFavorite,
   children,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -46,6 +48,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         content: editedSnippet.content,
         language: editedSnippet.language,
         tags: editedSnippet.tags.filter((tag) => tag.trim() !== ""),
+        favorite: editedSnippet.favorite,
       });
       onEdit(editedSnippet);
       setIsEditing(false);
@@ -85,6 +88,13 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         .map((tag) => tag.trim())
         .filter((tag) => tag !== ""),
     }));
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newFavoriteStatus = !editedSnippet.favorite;
+    setEditedSnippet((prev) => ({ ...prev, favorite: newFavoriteStatus }));
+    onToggleFavorite(snippet.id, newFavoriteStatus);
   };
 
   const renderHighlightedCode = useCallback(
@@ -194,9 +204,29 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
           </div>
         ) : (
           <>
-            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200 pr-8">
-              {snippet.title}
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 pr-8">
+                {snippet.title}
+              </h2>
+              <button
+                onClick={handleToggleFavorite}
+                className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                title={
+                  snippet.favorite
+                    ? "Remove from favorites"
+                    : "Add to favorites"
+                }
+              >
+                <Star
+                  size={24}
+                  className={
+                    snippet.favorite
+                      ? "text-yellow-500 fill-current"
+                      : "text-gray-400"
+                  }
+                />
+              </button>
+            </div>
             <div className="mb-4">
               {renderHighlightedCode(snippet.content, snippet.language)}
             </div>

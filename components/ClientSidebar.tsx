@@ -12,13 +12,18 @@ import {
   FileText,
   Sun,
   Moon,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 import { Snippet } from "../types/snippet";
 
 interface ClientSidebarProps {
-  onFilterChange: (languages: string[], tags: string[]) => void;
+  onFilterChange: (
+    languages: string[],
+    tags: string[],
+    showFavorites: boolean
+  ) => void;
   isOpen: boolean;
   onToggle: () => void;
   onAddSnippet: () => void;
@@ -44,6 +49,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showFavorites, setShowFavorites] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const { signOut } = useAuth();
 
@@ -95,7 +101,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
       ? selectedLanguages.filter((l) => l !== language)
       : [...selectedLanguages, language];
     setSelectedLanguages(updatedLanguages);
-    onFilterChange(updatedLanguages, selectedTags);
+    onFilterChange(updatedLanguages, selectedTags, showFavorites);
   };
 
   const handleTagChange = (tag: string) => {
@@ -103,13 +109,20 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
     setSelectedTags(updatedTags);
-    onFilterChange(selectedLanguages, updatedTags);
+    onFilterChange(selectedLanguages, updatedTags, showFavorites);
+  };
+
+  const handleFavoritesChange = () => {
+    const newShowFavorites = !showFavorites;
+    setShowFavorites(newShowFavorites);
+    onFilterChange(selectedLanguages, selectedTags, newShowFavorites);
   };
 
   const clearFilters = () => {
     setSelectedLanguages([]);
     setSelectedTags([]);
-    onFilterChange([], []);
+    setShowFavorites(false);
+    onFilterChange([], [], false);
   };
 
   const handleSignOut = async () => {
@@ -124,7 +137,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
     <>
       <button
         onClick={onToggle}
-        className="fixed top-4 left-4 z-50 md:hidden bg-white dark:bg-gray-800 p-2 rounded-full shadow-md"
+        className="fixed top-4 left-4 z-50 md:hidden bg-white dark:bg-gray-800 p-2 rounded-full shadow-md text-gray-900 dark:text-gray-100"
         aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -132,7 +145,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
       <div
         className={`fixed inset-y-0 left-0 transform ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } md:relative md:translate-x-0 transition duration-200 ease-in-out z-40 bg-white dark:bg-gray-800 dark:text-white w-64 p-4 border-r dark:border-gray-700 overflow-y-auto flex flex-col`}
+        } md:relative md:translate-x-0 transition duration-200 ease-in-out z-40 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 w-64 p-4 border-r dark:border-gray-700 overflow-y-auto flex flex-col`}
       >
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">SnippetVault</h1>
@@ -157,13 +170,15 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
         <div className="mb-6 flex-grow">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-md font-medium">Languages</h3>
-            {selectedLanguages.length > 0 && (
+            {(selectedLanguages.length > 0 ||
+              selectedTags.length > 0 ||
+              showFavorites) && (
               <button
                 onClick={clearFilters}
                 className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center"
               >
                 <RefreshCw size={14} className="mr-1" />
-                Clear
+                Clear All
               </button>
             )}
           </div>
@@ -192,15 +207,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
           <div className="mb-6 flex-grow">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-md font-medium">Tags</h3>
-              {selectedTags.length > 0 && (
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center"
-                >
-                  <RefreshCw size={14} className="mr-1" />
-                  Clear
-                </button>
-              )}
             </div>
             <div className="space-y-2">
               {tags.map((tag) => (
@@ -219,6 +225,24 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
             </div>
           </div>
         )}
+        <div className="mb-6">
+          <button
+            onClick={handleFavoritesChange}
+            className={`flex items-center w-full px-2 py-1 rounded-md transition-colors text-left ${
+              showFavorites
+                ? "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                : "hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
+          >
+            <Star
+              size={16}
+              className={`mr-2 ${
+                showFavorites ? "text-yellow-500 fill-current" : "text-gray-400"
+              }`}
+            />
+            Favorites
+          </button>
+        </div>
         <div className="mt-auto">
           <button
             onClick={handleSignOut}

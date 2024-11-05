@@ -58,6 +58,7 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
         .filter(Boolean),
       date: new Date().toISOString(),
       userId: user.uid,
+      favorite: false,
     };
 
     try {

@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
 import SnippetCard from "./SnippetCard";
@@ -12,11 +19,13 @@ import AddSnippetForm from "./AddSnippetForm";
 interface SnippetGridProps {
   selectedLanguages: string[];
   selectedTags: string[];
+  showFavorites: boolean;
 }
 
 const SnippetGrid: React.FC<SnippetGridProps> = ({
   selectedLanguages,
   selectedTags,
+  showFavorites,
 }) => {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +61,10 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
         );
       }
 
+      if (showFavorites) {
+        fetchedSnippets = fetchedSnippets.filter((snippet) => snippet.favorite);
+      }
+
       setSnippets(fetchedSnippets);
     } catch (err) {
       console.error("Error fetching snippets:", err);
@@ -59,7 +72,7 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [user, selectedLanguages, selectedTags]);
+  }, [user, selectedLanguages, selectedTags, showFavorites]);
 
   useEffect(() => {
     fetchSnippets();
@@ -71,6 +84,23 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
 
   const handleDelete = () => {
     fetchSnippets();
+  };
+
+  const handleToggleFavorite = async (snippetId: string, favorite: boolean) => {
+    try {
+      const snippetRef = doc(db, "snippets", snippetId);
+      await updateDoc(snippetRef, { favorite });
+      setSnippets((prevSnippets) =>
+        prevSnippets.map((snippet) =>
+          snippet.id === snippetId ? { ...snippet, favorite } : snippet
+        )
+      );
+      if (showFavorites) {
+        fetchSnippets();
+      }
+    } catch (error) {
+      console.error("Error updating favorite status:", error);
+    }
   };
 
   if (loading) {
@@ -91,6 +121,7 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
             snippet={snippet}
             onUpdate={handleUpdate}
             onDelete={handleDelete}
+            onToggleFavorite={handleToggleFavorite}
           />
         ))}
       </div>
