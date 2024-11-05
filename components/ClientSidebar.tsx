@@ -10,8 +10,6 @@ import {
   Info,
   Shield,
   FileText,
-  Sun,
-  Moon,
   Star,
 } from "lucide-react";
 import Link from "next/link";
@@ -50,34 +48,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const { signOut } = useAuth();
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const systemPrefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-      setIsDarkMode(systemPrefersDark);
-
-      if (systemPrefersDark) {
-        document.documentElement.classList.add("dark");
-      }
-
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = (e: MediaQueryListEvent) => {
-        setIsDarkMode(e.matches);
-        if (e.matches) {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      };
-
-      mediaQuery.addEventListener("change", handleChange);
-      return () => mediaQuery.removeEventListener("change", handleChange);
-    }
-  }, []);
 
   useEffect(() => {
     const uniqueLanguages = Array.from(
@@ -90,11 +61,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
     setLanguages(uniqueLanguages);
     setTags(uniqueTags);
   }, [snippets]);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle("dark");
-  };
 
   const handleLanguageChange = (language: string) => {
     const updatedLanguages = selectedLanguages.includes(language)
@@ -135,13 +101,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
 
   return (
     <>
-      <button
-        onClick={onToggle}
-        className="fixed top-4 left-4 z-50 md:hidden bg-white dark:bg-gray-800 p-2 rounded-full shadow-md text-gray-900 dark:text-gray-100"
-        aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
-      >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
       <div
         className={`fixed inset-y-0 left-0 transform ${
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -150,13 +109,10 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">SnippetVault</h1>
           <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            aria-label={
-              isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-            }
+            onClick={onToggle}
+            className="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            <X size={24} />
           </button>
         </div>
         <button

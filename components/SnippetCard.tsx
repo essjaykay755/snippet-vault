@@ -142,7 +142,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
                 {isLinkCopied ? (
                   <Check size={16} className="text-green-500" />
                 ) : (
-                  <LinkIcon size={16} />
+                  <LinkIcon size={16} className="text-gray-900" />
                 )}
               </button>
               <button
@@ -153,7 +153,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
                 {isCopied ? (
                   <Check size={16} className="text-green-500" />
                 ) : (
-                  <Copy size={16} />
+                  <Copy size={16} className="text-gray-900" />
                 )}
               </button>
             </div>
