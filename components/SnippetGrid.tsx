@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { updateDoc, doc } from "firebase/firestore";
+import { updateDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
 import SnippetCard from "./SnippetCard";
@@ -10,23 +10,33 @@ import AddSnippetForm from "./AddSnippetForm";
 
 interface SnippetGridProps {
   snippets: Snippet[];
+  onSnippetsChange: () => void;
 }
 
-const SnippetGrid: React.FC<SnippetGridProps> = ({ snippets }) => {
+const SnippetGrid: React.FC<SnippetGridProps> = ({
+  snippets,
+  onSnippetsChange,
+}) => {
   const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
 
   const handleUpdate = () => {
-    // Implement update logic if needed
+    onSnippetsChange();
   };
 
-  const handleDelete = () => {
-    // Implement delete logic if needed
+  const handleDelete = async (snippetId: string) => {
+    try {
+      await deleteDoc(doc(db, "snippets", snippetId));
+      onSnippetsChange();
+    } catch (error) {
+      console.error("Error deleting snippet:", error);
+    }
   };
 
   const handleToggleFavorite = async (snippetId: string, favorite: boolean) => {
     try {
       const snippetRef = doc(db, "snippets", snippetId);
       await updateDoc(snippetRef, { favorite });
+      onSnippetsChange();
     } catch (error) {
       console.error("Error updating favorite status:", error);
     }
@@ -41,7 +51,7 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({ snippets }) => {
             key={snippet.id}
             snippet={snippet}
             onUpdate={handleUpdate}
-            onDelete={handleDelete}
+            onDelete={() => handleDelete(snippet.id)}
             onToggleFavorite={handleToggleFavorite}
           />
         ))}
@@ -50,7 +60,7 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({ snippets }) => {
         <AddSnippetForm
           onSave={() => {
             setIsAddSnippetModalOpen(false);
-            // Implement logic to refresh snippets if needed
+            onSnippetsChange();
           }}
           onClose={() => setIsAddSnippetModalOpen(false)}
         />

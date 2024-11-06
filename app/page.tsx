@@ -20,19 +20,19 @@ export default function Home() {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    const fetchSnippets = async () => {
-      if (user) {
-        const snippetsRef = collection(db, "snippets");
-        const q = query(snippetsRef, where("userId", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-        const fetchedSnippets = querySnapshot.docs.map(
-          (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
-        );
-        setSnippets(fetchedSnippets);
-      }
-    };
+  const fetchSnippets = async () => {
+    if (user) {
+      const snippetsRef = collection(db, "snippets");
+      const q = query(snippetsRef, where("userId", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      const fetchedSnippets = querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
+      );
+      setSnippets(fetchedSnippets);
+    }
+  };
 
+  useEffect(() => {
     fetchSnippets();
   }, [user]);
 
@@ -71,33 +71,39 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <ClientSidebar
         onFilterChange={handleFilterChange}
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onAddSnippet={() => {}}
         snippets={snippets}
+        onSnippetsChange={fetchSnippets}
       />
-      <main className="flex-1 p-4 overflow-auto">
+      <main className="flex-1 p-4 overflow-auto bg-white dark:bg-gray-800">
         <div className="flex items-center mb-6">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="md:hidden p-2 mr-2 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-md"
+            className="md:hidden p-2 mr-2 rounded-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-md"
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-2xl font-bold mr-4">My Snippets</h1>
-          <div className="flex-grow">
+          <h1 className="text-2xl font-bold mr-4 text-gray-900 dark:text-gray-100">
+            My Snippets
+          </h1>
+          <div className="flex-grow max-w-md">
             <SearchBar onSearch={handleSearch} />
           </div>
         </div>
         {searchTerm && (
-          <p className="mb-4 text-lg font-semibold">
+          <p className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
             Search results for "{searchTerm}"
           </p>
         )}
-        <SnippetGrid snippets={filteredSnippets} />
+        <SnippetGrid
+          snippets={filteredSnippets}
+          onSnippetsChange={fetchSnippets}
+        />
       </main>
     </div>
   );
