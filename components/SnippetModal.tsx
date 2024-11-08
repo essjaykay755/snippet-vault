@@ -7,6 +7,16 @@ import { Maximize2, Edit, Trash2, Copy, Check, X, Star } from "lucide-react";
 import { Snippet } from "../types/snippet";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SnippetModalProps {
   snippet: Snippet;
@@ -105,9 +115,13 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         language={language as Language}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre className={`${className} p-4 rounded-lg`} style={style}>
+          <pre
+            className={`${className} p-4 rounded-lg overflow-auto`}
+            style={style}
+          >
             {tokens.map((line, i) => (
               <div key={i} {...getLineProps({ line })}>
+                <span className="mr-4 opacity-50">{i + 1}</span>
                 {line.map((token, key) => (
                   <span key={key} {...getTokenProps({ token })} />
                 ))}
@@ -146,38 +160,78 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         )}
         {isEditing ? (
           <div className="space-y-4">
-            <input
-              type="text"
-              name="title"
-              value={editedSnippet.title}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-              placeholder="Title"
-            />
-            <textarea
-              name="content"
-              value={editedSnippet.content}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-              rows={10}
-              placeholder="Content"
-            />
-            <input
-              type="text"
-              name="language"
-              value={editedSnippet.language}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-              placeholder="Language"
-            />
-            <input
-              type="text"
-              name="tags"
-              value={editedSnippet.tags.join(", ")}
-              onChange={handleTagsChange}
-              className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-              placeholder="Tags (comma-separated)"
-            />
+            <div>
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Title
+              </label>
+              <input
+                id="title"
+                type="text"
+                name="title"
+                value={editedSnippet.title}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                placeholder="Title"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="content"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Content
+              </label>
+              <textarea
+                id="content"
+                name="content"
+                value={editedSnippet.content}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                rows={10}
+                placeholder="Content"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="language"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Language
+              </label>
+              <select
+                id="language"
+                name="language"
+                value={editedSnippet.language}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+              >
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="typescript">TypeScript</option>
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="tags"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Tags (comma-separated)
+              </label>
+              <input
+                id="tags"
+                type="text"
+                name="tags"
+                value={editedSnippet.tags.join(", ")}
+                onChange={handleTagsChange}
+                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                placeholder="Tags (comma-separated)"
+              />
+            </div>
             <div className="mt-4">
               <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">
                 Preview
@@ -270,33 +324,31 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         )}
         {children}
       </motion.div>
-      {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
-              Confirm Deletion
-            </h3>
-            <p className="mb-4 text-gray-600 dark:text-gray-400">
-              Are you sure you want to delete this snippet? This action cannot
-              be undone.
-            </p>
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setShowDeleteConfirmation(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog
+        open={showDeleteConfirmation}
+        onOpenChange={setShowDeleteConfirmation}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this snippet?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              snippet.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 };

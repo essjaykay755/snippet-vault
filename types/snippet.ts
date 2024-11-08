@@ -2,9 +2,23 @@ export interface Snippet {
   id: string;
   title: string;
   content: string;
-  language: string;
+  language:
+    | "javascript"
+    | "python"
+    | "css"
+    | "html"
+    | "typescript"
+    | "java"
+    | "csharp"
+    | "php"
+    | "ruby"
+    | "go"
+    | "rust"
+    | "swift"
+    | "kotlin"
+    | "plaintext";
   tags: string[];
+  favorite: boolean;
   date: string;
   userId: string;
-  favorite: boolean;
 }

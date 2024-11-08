@@ -7,6 +7,7 @@ import { Copy, Check, Link as LinkIcon, Star } from "lucide-react";
 import SnippetModal from "./SnippetModal";
 import { useRouter } from "next/navigation";
 import { Snippet } from "../types/snippet";
+import { useTheme } from "next-themes";
 
 interface SnippetCardProps {
   snippet: Snippet;
@@ -16,11 +17,20 @@ interface SnippetCardProps {
 }
 
 const languageColors: { [key: string]: string } = {
-  javascript: "bg-yellow-100 dark:bg-yellow-900/50",
-  python: "bg-blue-100 dark:bg-blue-900/50",
-  css: "bg-pink-100 dark:bg-pink-900/50",
-  html: "bg-orange-100 dark:bg-orange-900/50",
-  typescript: "bg-blue-100 dark:bg-blue-900/50",
+  javascript: "bg-yellow-100 dark:bg-yellow-900/30",
+  python: "bg-blue-100 dark:bg-blue-900/30",
+  css: "bg-pink-100 dark:bg-pink-900/30",
+  html: "bg-orange-100 dark:bg-orange-900/30",
+  typescript: "bg-blue-100 dark:bg-blue-900/30",
+  java: "bg-red-100 dark:bg-red-900/30",
+  csharp: "bg-purple-100 dark:bg-purple-900/30",
+  php: "bg-indigo-100 dark:bg-indigo-900/30",
+  ruby: "bg-red-100 dark:bg-red-900/30",
+  go: "bg-cyan-100 dark:bg-cyan-900/30",
+  rust: "bg-orange-100 dark:bg-orange-900/30",
+  swift: "bg-orange-100 dark:bg-orange-900/30",
+  kotlin: "bg-purple-100 dark:bg-purple-900/30",
+  plaintext: "bg-gray-100 dark:bg-gray-800/30",
 };
 
 const SnippetCard: React.FC<SnippetCardProps> = ({
@@ -33,12 +43,11 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
   const [isCopied, setIsCopied] = useState(false);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [formattedDate, setFormattedDate] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const router = useRouter();
+  const { theme } = useTheme();
 
   useEffect(() => {
     setFormattedDate(formatDate(snippet.date));
-    setIsDarkMode(document.documentElement.classList.contains("dark"));
   }, [snippet.date]);
 
   const handleCopy = (e: React.MouseEvent) => {
@@ -78,10 +87,10 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
     <>
       <motion.div
         className={`rounded-lg shadow-md overflow-hidden cursor-pointer relative h-[300px] ${
-          languageColors[snippet.language] || "bg-gray-50 dark:bg-gray-800/50"
+          languageColors[snippet.language] || "bg-gray-100 dark:bg-gray-800/30"
         }`}
         onClick={() => setIsModalOpen(true)}
-        whileHover={{ scale: 1.05 }}
+        whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300 }}
       >
         <div className="p-4 h-full flex flex-col">
@@ -91,7 +100,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
             </h2>
             <button
               onClick={handleToggleFavorite}
-              className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="p-1 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors"
               title={
                 snippet.favorite ? "Remove from favorites" : "Add to favorites"
               }
@@ -108,16 +117,16 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
           </div>
           <div className="flex-grow overflow-hidden">
             <Highlight
-              theme={isDarkMode ? themes.nightOwl : themes.github}
+              theme={theme === "dark" ? themes.nightOwl : themes.github}
               code={snippet.content}
               language={snippet.language as any}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
                 <pre
-                  className={`${className} text-sm`}
+                  className="text-sm overflow-hidden"
                   style={{
                     ...style,
-                    background: "transparent",
+                    backgroundColor: "transparent",
                     margin: 0,
                     padding: 0,
                   }}
@@ -129,15 +138,13 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
                       className="text-gray-800 dark:text-gray-200"
                     >
                       {line.map((token, key) => (
-                        <span
-                          key={key}
-                          {...getTokenProps({ token })}
-                          className="text-inherit"
-                        />
+                        <span key={key} {...getTokenProps({ token })} />
                       ))}
                     </div>
                   ))}
-                  {tokens.length > 5 && <div>...</div>}
+                  {tokens.length > 5 && (
+                    <div className="text-gray-500 dark:text-gray-400">...</div>
+                  )}
                 </pre>
               )}
             </Highlight>
@@ -149,7 +156,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
             <div className="flex space-x-2">
               <button
                 onClick={handleCopyLink}
-                className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                className="p-2 bg-white/50 dark:bg-gray-700/50 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 title="Copy link"
               >
                 {isLinkCopied ? (
@@ -163,7 +170,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
               </button>
               <button
                 onClick={handleCopy}
-                className="p-2 bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                className="p-2 bg-white/50 dark:bg-gray-700/50 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 title="Copy snippet"
               >
                 {isCopied ? (

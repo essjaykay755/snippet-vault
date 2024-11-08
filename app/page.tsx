@@ -12,13 +12,14 @@ import { Menu } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
 
   const fetchSnippets = async () => {
     if (user) {
@@ -33,7 +34,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchSnippets();
+    if (user) {
+      fetchSnippets();
+    }
   }, [user]);
 
   const handleFilterChange = (
@@ -66,6 +69,10 @@ export default function Home() {
     return matchesSearch && matchesLanguages && matchesTags && matchesFavorites;
   });
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   if (!user) {
     return <SignIn />;
   }
@@ -76,11 +83,11 @@ export default function Home() {
         onFilterChange={handleFilterChange}
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        onAddSnippet={() => {}}
+        onAddSnippet={() => setIsAddSnippetModalOpen(true)}
         snippets={snippets}
         onSnippetsChange={fetchSnippets}
       />
-      <main className="flex-1 p-4 overflow-auto bg-white dark:bg-gray-800">
+      <main className="flex-1 p-4 overflow-auto">
         <div className="flex items-center mb-6">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -103,6 +110,8 @@ export default function Home() {
         <SnippetGrid
           snippets={filteredSnippets}
           onSnippetsChange={fetchSnippets}
+          isAddSnippetModalOpen={isAddSnippetModalOpen}
+          setIsAddSnippetModalOpen={setIsAddSnippetModalOpen}
         />
       </main>
     </div>

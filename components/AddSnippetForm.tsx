@@ -51,7 +51,7 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
     const newSnippet: Omit<Snippet, "id"> = {
       title: title.trim(),
       content: content.trim(),
-      language,
+      language: language as Snippet["language"],
       tags: tags
         .split(",")
         .map((tag) => tag.trim())
@@ -129,6 +129,15 @@ const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
                 <option value="css">CSS</option>
                 <option value="html">HTML</option>
                 <option value="typescript">TypeScript</option>
+                <option value="java">Java</option>
+                <option value="csharp">C#</option>
+                <option value="php">PHP</option>
+                <option value="ruby">Ruby</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+                <option value="swift">Swift</option>
+                <option value="kotlin">Kotlin</option>
+                <option value="plaintext">Plain Text</option>
               </select>
               {errors.language && (
                 <p className="mt-1 text-sm text-red-500">{errors.language}</p>

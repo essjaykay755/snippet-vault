@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { updateDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Snippet } from "../types/snippet";
@@ -11,14 +11,16 @@ import AddSnippetForm from "./AddSnippetForm";
 interface SnippetGridProps {
   snippets: Snippet[];
   onSnippetsChange: () => void;
+  isAddSnippetModalOpen: boolean;
+  setIsAddSnippetModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SnippetGrid: React.FC<SnippetGridProps> = ({
   snippets,
   onSnippetsChange,
+  isAddSnippetModalOpen,
+  setIsAddSnippetModalOpen,
 }) => {
-  const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
-
   const handleUpdate = () => {
     onSnippetsChange();
   };
