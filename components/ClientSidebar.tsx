@@ -73,41 +73,47 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
     setTags(uniqueTags);
   }, [snippets]);
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = async () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle("dark");
+    await onSnippetsChange();
   };
 
-  const handleLanguageChange = (language: string) => {
+  const handleLanguageChange = async (language: string) => {
     const updatedLanguages = selectedLanguages.includes(language)
       ? selectedLanguages.filter((l) => l !== language)
       : [...selectedLanguages, language];
     setSelectedLanguages(updatedLanguages);
     onFilterChange(updatedLanguages, selectedTags, showFavorites);
+    await onSnippetsChange();
   };
 
-  const handleTagChange = (tag: string) => {
+  const handleTagChange = async (tag: string) => {
     const updatedTags = selectedTags.includes(tag)
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
     setSelectedTags(updatedTags);
     onFilterChange(selectedLanguages, updatedTags, showFavorites);
+    await onSnippetsChange();
   };
 
-  const handleFavoritesChange = () => {
+  const handleFavoritesChange = async () => {
     const newShowFavorites = !showFavorites;
     setShowFavorites(newShowFavorites);
     onFilterChange(selectedLanguages, selectedTags, newShowFavorites);
+    await onSnippetsChange();
   };
 
-  const clearLanguages = () => {
+  const clearLanguages = async () => {
     setSelectedLanguages([]);
     onFilterChange([], selectedTags, showFavorites);
+    await onSnippetsChange();
   };
 
-  const clearTags = () => {
+  const clearTags = async () => {
     setSelectedTags([]);
     onFilterChange(selectedLanguages, [], showFavorites);
+    await onSnippetsChange();
   };
 
   const handleSignOut = async () => {

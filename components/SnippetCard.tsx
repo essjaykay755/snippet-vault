@@ -121,7 +121,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
               code={snippet.content}
               language={snippet.language as Language}
             >
-              {({ className, style, tokens, getLineProps, getTokenProps }) => (
+              {({ style, tokens, getLineProps, getTokenProps }) => (
                 <pre
                   className="text-sm overflow-hidden"
                   style={{
