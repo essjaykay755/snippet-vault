@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Highlight, themes } from "prism-react-renderer";
+import { Highlight, themes, Language } from "prism-react-renderer";
 import { motion } from "framer-motion";
 import { Copy, Check, Link as LinkIcon, Star } from "lucide-react";
 import SnippetModal from "./SnippetModal";
@@ -31,7 +31,7 @@ const languageColors: { [key: string]: string } = {
   swift: "bg-orange-100 dark:bg-orange-900/30",
   kotlin: "bg-purple-100 dark:bg-purple-900/30",
   plaintext: "bg-gray-100 dark:bg-gray-800/30",
-};
+} as const;
 
 const SnippetCard: React.FC<SnippetCardProps> = ({
   snippet,
@@ -119,7 +119,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
             <Highlight
               theme={theme === "dark" ? themes.nightOwl : themes.github}
               code={snippet.content}
-              language={snippet.language as any}
+              language={snippet.language as Language}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
                 <pre

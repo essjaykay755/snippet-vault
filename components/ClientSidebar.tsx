@@ -27,7 +27,7 @@ interface ClientSidebarProps {
   onToggle: () => void;
   onAddSnippet: () => void;
   snippets: Snippet[];
-  onSnippetsChange: () => void;
+  onSnippetsChange: () => Promise<void>;
 }
 
 const languageColors: { [key: string]: string } = {
@@ -36,7 +36,7 @@ const languageColors: { [key: string]: string } = {
   css: "bg-pink-200 dark:bg-pink-900",
   html: "bg-orange-200 dark:bg-orange-900",
   typescript: "bg-blue-300 dark:bg-blue-800",
-};
+} as const;
 
 const ClientSidebar: React.FC<ClientSidebarProps> = ({
   onFilterChange,
@@ -154,7 +154,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
       </button>
       <h2 className="text-lg font-semibold mb-4">Filters</h2>
 
-      {/* Languages Section */}
       <div className="mb-6 flex-grow">
         <div className="flex justify-between items-center mb-2">
           <h3 className="text-md font-medium">Languages</h3>
@@ -190,7 +189,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
         </div>
       </div>
 
-      {/* Tags Section */}
       {tags.length > 0 && (
         <div className="mb-6 flex-grow">
           <div className="flex justify-between items-center mb-2">
@@ -223,7 +221,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
         </div>
       )}
 
-      {/* Favorites Toggle */}
       <div className="mb-6">
         <button
           onClick={handleFavoritesChange}
