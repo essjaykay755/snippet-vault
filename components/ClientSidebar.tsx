@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 import { Snippet } from "../types/snippet";
+import { Button } from "@/components/ui/button";
 
 interface ClientSidebarProps {
   onFilterChange: (
@@ -247,13 +248,13 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
       </div>
 
       <div className="mt-auto">
-        <button
+        <Button
           onClick={handleSignOut}
           className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center justify-center mb-4"
         >
           <LogOut size={18} className="mr-2" />
           Sign Out
-        </button>
+        </Button>
         <div className="text-center text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-800 pt-4">
           <div className="flex justify-center space-x-4 mb-2">
             <Link
