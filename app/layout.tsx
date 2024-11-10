@@ -1,41 +1,31 @@
-"use client";
-
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
-import AuthWrapper from "../components/AuthWrapper";
 import { ThemeProvider } from "next-themes";
-import { useState, useEffect } from "react";
-import "@/styles/globals.css";
-import React from "react";
 
-export default function RootLayout({
-  children,
-}: {
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "SnippetVault",
+  description: "A modern code snippet manager",
+};
+
+interface RootLayoutProps {
   children: React.ReactNode;
-}) {
-  const [mounted, setMounted] = useState(false);
+}
 
-  // useEffect only runs on the client, so now we can safely show the UI
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-gray-100 dark:bg-gray-900 text-black dark:text-white">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            <AuthWrapper>
-              {React.Children.map(children, (child) =>
-                React.isValidElement(child)
-                  ? React.cloneElement(child as React.ReactElement<any>, {})
-                  : child
-              )}
-            </AuthWrapper>
-          </AuthProvider>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>
       </body>
     </html>

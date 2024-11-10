@@ -10,7 +10,7 @@ import AddSnippetForm from "./AddSnippetForm";
 
 interface SnippetGridProps {
   snippets: Snippet[];
-  onSnippetsChange: () => void;
+  onSnippetsChange: () => Promise<void>;
   isAddSnippetModalOpen: boolean;
   setIsAddSnippetModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }

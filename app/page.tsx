@@ -1,84 +1,82 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import ClientSidebar from "../components/ClientSidebar";
-import SnippetGrid from "../components/SnippetGrid";
-import SignIn from "../components/SignIn";
+import { useEffect, useState, useCallback } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import { useAuth } from "../contexts/AuthContext";
+import SnippetGrid from "../components/SnippetGrid";
+import ClientSidebar from "../components/ClientSidebar";
 import { Snippet } from "../types/snippet";
-import { Menu } from "lucide-react";
-import SearchBar from "../components/SearchBar";
 
 export default function Home() {
-  const { user, loading } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showFavorites, setShowFavorites] = useState(false);
   const [snippets, setSnippets] = useState<Snippet[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredSnippets, setFilteredSnippets] = useState<Snippet[]>([]);
   const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
-  const fetchSnippets = async () => {
-    if (user) {
-      const snippetsRef = collection(db, "snippets");
-      const q = query(snippetsRef, where("userId", "==", user.uid));
-      const querySnapshot = await getDocs(q);
-      const fetchedSnippets = querySnapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() } as Snippet)
+  const fetchSnippets = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const q = query(
+        collection(db, "snippets"),
+        where("userId", "==", user.uid)
       );
-      setSnippets(fetchedSnippets);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchSnippets();
+      const querySnapshot = await getDocs(q);
+      const snippetsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Snippet[];
+      setSnippets(snippetsData);
+      setFilteredSnippets(snippetsData);
+    } catch (error) {
+      console.error("Error fetching snippets:", error);
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchSnippets();
+  }, [fetchSnippets]);
 
   const handleFilterChange = (
     languages: string[],
     tags: string[],
-    favorites: boolean
+    showFavorites: boolean
   ) => {
-    setSelectedLanguages(languages);
-    setSelectedTags(tags);
-    setShowFavorites(favorites);
+    let filtered = [...snippets];
+
+    if (languages.length > 0) {
+      filtered = filtered.filter((snippet) =>
+        languages.includes(snippet.language)
+      );
+    }
+
+    if (tags.length > 0) {
+      filtered = filtered.filter((snippet) =>
+        tags.every((tag) => snippet.tags?.includes(tag))
+      );
+    }
+
+    if (showFavorites) {
+      filtered = filtered.filter((snippet) => snippet.favorite);
+    }
+
+    setFilteredSnippets(filtered);
   };
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
-
-  const filteredSnippets = snippets.filter((snippet) => {
-    const matchesSearch = searchTerm
-      ? snippet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        snippet.content.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
-    const matchesLanguages =
-      selectedLanguages.length === 0 ||
-      selectedLanguages.includes(snippet.language);
-    const matchesTags =
-      selectedTags.length === 0 ||
-      selectedTags.some((tag) => snippet.tags.includes(tag));
-    const matchesFavorites = showFavorites ? snippet.favorite : true;
-
-    return matchesSearch && matchesLanguages && matchesTags && matchesFavorites;
-  });
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   if (!user) {
-    return <SignIn />;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-xl text-gray-600 dark:text-gray-400">
+          Please sign in to view your snippets
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <ClientSidebar
         onFilterChange={handleFilterChange}
         isOpen={isSidebarOpen}
@@ -87,26 +85,7 @@ export default function Home() {
         snippets={snippets}
         onSnippetsChange={fetchSnippets}
       />
-      <main className="flex-1 p-4 overflow-auto">
-        <div className="flex items-center mb-6">
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="md:hidden p-2 mr-2 rounded-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-md"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-2xl font-bold mr-4 text-gray-900 dark:text-gray-100">
-            My Snippets
-          </h1>
-          <div className="flex-grow max-w-md">
-            <SearchBar onSearch={handleSearch} />
-          </div>
-        </div>
-        {searchTerm && (
-          <p className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Search results for "{searchTerm}"
-          </p>
-        )}
+      <main className="flex-1 p-8">
         <SnippetGrid
           snippets={filteredSnippets}
           onSnippetsChange={fetchSnippets}
