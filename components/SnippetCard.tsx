@@ -8,6 +8,7 @@ import SnippetModal from "./SnippetModal";
 import { useRouter } from "next/navigation";
 import { Snippet } from "../types/snippet";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 interface SnippetCardProps {
   snippet: Snippet;
@@ -33,6 +34,15 @@ const languageColors: { [key: string]: string } = {
   plaintext: "bg-gray-100 dark:bg-gray-800/30",
 } as const;
 
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return `Created on ${date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })}`;
+};
+
 const SnippetCard: React.FC<SnippetCardProps> = ({
   snippet,
   onUpdate,
@@ -43,11 +53,21 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
   const [isCopied, setIsCopied] = useState(false);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [formattedDate, setFormattedDate] = useState("");
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setFormattedDate(formatDate(snippet.date));
   }, [snippet.date]);
+
+  if (!mounted) {
+    return null;
+  }
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -73,15 +93,6 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleFavorite(snippet.id, !snippet.favorite);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `Created on ${date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })}`;
   };
 
   const handleEdit = () => {
