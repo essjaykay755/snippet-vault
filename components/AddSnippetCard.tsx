@@ -1,27 +1,24 @@
 import React from "react";
 import { Plus } from "lucide-react";
+import { motion } from "framer-motion";
 
-interface AddSnippetCardProps {
-  onClick: () => void;
-}
-
-const AddSnippetCard: React.FC<AddSnippetCardProps> = ({ onClick }) => {
+export default function AddSnippetCard({ onClick }: { onClick: () => void }) {
   return (
-    <div
-      className="rounded-lg shadow-md overflow-hidden cursor-pointer relative h-[300px] bg-white dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center"
+    <motion.div
+      className="rounded-lg border border-dashed border-border hover:border-primary/50 bg-background/50 cursor-pointer h-[300px] flex items-center justify-center"
       onClick={onClick}
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300 }}
     >
-      <div className="text-center">
-        <Plus
-          className="mx-auto mb-2 text-gray-400 dark:text-gray-500"
-          size={48}
-        />
-        <p className="text-lg font-semibold text-gray-600 dark:text-gray-300">
-          Add New Snippet
+      <div className="text-center space-y-2 p-4">
+        <div className="mx-auto rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center">
+          <Plus className="h-6 w-6 text-primary" />
+        </div>
+        <h3 className="font-semibold text-lg">Add New Snippet</h3>
+        <p className="text-sm text-muted-foreground">
+          Click to add a new code snippet
         </p>
       </div>
-    </div>
+    </motion.div>
   );
-};
-
-export default AddSnippetCard;
+}

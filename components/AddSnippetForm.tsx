@@ -1,11 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { Snippet } from "../types/snippet";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+  SelectContent,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { X } from "lucide-react";
+import { Highlight, themes, Language } from "prism-react-renderer";
+import { useTheme } from "next-themes";
 
 interface AddSnippetFormProps {
   onSave: () => void;
@@ -23,6 +38,14 @@ export default function AddSnippetForm({
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const { theme: appTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,98 +90,130 @@ export default function AddSnippetForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
-        <h2 className="text-2xl font-bold mb-4">Add New Snippet</h2>
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-background rounded-lg border shadow-lg p-6 w-full max-w-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Add New Snippet</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
         {error && (
-          <div className="p-4 mb-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
-            <p>{error}</p>
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <input
-              type="text"
+          <div className="space-y-2">
+            <Label>Title</Label>
+            <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
               placeholder="Enter snippet title"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Description
-            </label>
-            <input
-              type="text"
+
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
               placeholder="Enter snippet description (optional)"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Content</label>
-            <textarea
+
+          <div className="space-y-2">
+            <Label>Content</Label>
+            <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-              rows={10}
               placeholder="Enter your code snippet"
+              rows={10}
+              className="font-mono"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Language</label>
-            <select
+
+          {content && (
+            <div className="space-y-2">
+              <Label>Preview</Label>
+              <div className="rounded-lg border">
+                <Highlight
+                  theme={appTheme === "dark" ? themes.nightOwl : themes.github}
+                  code={content}
+                  language={language as Language}
+                >
+                  {({
+                    className,
+                    style,
+                    tokens,
+                    getLineProps,
+                    getTokenProps,
+                  }) => (
+                    <pre
+                      className={`${className} p-4 rounded-lg overflow-auto max-h-[300px]`}
+                      style={style}
+                    >
+                      {tokens.map((line, i) => (
+                        <div key={i} {...getLineProps({ line })}>
+                          <span className="mr-4 opacity-50">{i + 1}</span>
+                          {line.map((token, key) => (
+                            <span key={key} {...getTokenProps({ token })} />
+                          ))}
+                        </div>
+                      ))}
+                    </pre>
+                  )}
+                </Highlight>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>Language</Label>
+            <Select
               value={language}
-              onChange={(e) =>
-                setLanguage(e.target.value as Snippet["language"])
+              onValueChange={(value) =>
+                setLanguage(value as Snippet["language"])
               }
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
             >
-              <option value="javascript">JavaScript</option>
-              <option value="typescript">TypeScript</option>
-              <option value="python">Python</option>
-              <option value="html">HTML</option>
-              <option value="css">CSS</option>
-              <option value="java">Java</option>
-              <option value="csharp">C#</option>
-              <option value="php">PHP</option>
-              <option value="ruby">Ruby</option>
-              <option value="go">Go</option>
-              <option value="rust">Rust</option>
-              <option value="swift">Swift</option>
-              <option value="kotlin">Kotlin</option>
-              <option value="plaintext">Plain Text</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="javascript">JavaScript</SelectItem>
+                <SelectItem value="typescript">TypeScript</SelectItem>
+                <SelectItem value="python">Python</SelectItem>
+                <SelectItem value="html">HTML</SelectItem>
+                <SelectItem value="css">CSS</SelectItem>
+                <SelectItem value="java">Java</SelectItem>
+                <SelectItem value="csharp">C#</SelectItem>
+                <SelectItem value="php">PHP</SelectItem>
+                <SelectItem value="ruby">Ruby</SelectItem>
+                <SelectItem value="go">Go</SelectItem>
+                <SelectItem value="rust">Rust</SelectItem>
+                <SelectItem value="swift">Swift</SelectItem>
+                <SelectItem value="kotlin">Kotlin</SelectItem>
+                <SelectItem value="plaintext">Plain Text</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Tags (comma-separated)
-            </label>
-            <input
-              type="text"
+
+          <div className="space-y-2">
+            <Label>Tags (comma-separated)</Label>
+            <Input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
               placeholder="Enter tags (e.g., react, hooks, frontend)"
             />
           </div>
-          <div className="flex justify-end space-x-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-            >
+
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-            >
-              Save
-            </button>
+            </Button>
+            <Button type="submit">Save</Button>
           </div>
         </form>
       </div>

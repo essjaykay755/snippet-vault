@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Highlight, themes, Language } from "prism-react-renderer";
 import { Maximize2, Edit, Trash2, Copy, Check, X, Star } from "lucide-react";
@@ -18,6 +18,20 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+  SelectContent,
+} from "@/components/ui/select";
+import { Alert } from "@/components/ui/alert";
+import { AlertDescription } from "@/components/ui/alert";
+import { useTheme } from "next-themes";
 
 interface SnippetModalProps {
   snippet: Snippet;
@@ -50,6 +64,41 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
     snippet.description || ""
   );
   const [editedTags, setEditedTags] = useState(snippet.tags || []);
+  const { theme: appTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const renderHighlightedCode = useCallback(
+    (code: string, language: string, theme: string | undefined) => (
+      <Highlight
+        theme={theme === "dark" ? themes.nightOwl : themes.github}
+        code={code}
+        language={language as Language}
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <pre
+            className={`${className} p-4 rounded-lg overflow-auto`}
+            style={style}
+          >
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({ line })}>
+                <span className="mr-4 opacity-50">{i + 1}</span>
+                {line.map((token, key) => (
+                  <span key={key} {...getTokenProps({ token })} />
+                ))}
+              </div>
+            ))}
+          </pre>
+        )}
+      </Highlight>
+    ),
+    []
+  );
+
+  if (!mounted) return null;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(snippet.content);
@@ -141,223 +190,185 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
     onToggleFavorite(snippet.id, newFavoriteStatus);
   };
 
-  const renderHighlightedCode = useCallback(
-    (code: string, language: string) => (
-      <Highlight
-        theme={themes.nightOwl}
-        code={code}
-        language={language as Language}
-      >
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre
-            className={`${className} p-4 rounded-lg overflow-auto`}
-            style={style}
-          >
-            {tokens.map((line, i) => (
-              <div key={i} {...getLineProps({ line })}>
-                <span className="mr-4 opacity-50">{i + 1}</span>
-                {line.map((token, key) => (
-                  <span key={key} {...getTokenProps({ token })} />
-                ))}
-              </div>
-            ))}
-          </pre>
-        )}
-      </Highlight>
-    ),
-    []
-  );
-
   return (
-    <motion.div
-      className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <motion.div
-        className="relative bg-white dark:bg-gray-800 w-full max-w-4xl m-4 p-6 rounded-lg shadow-xl"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-      >
-        <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          onClick={onClose}
-        >
-          <X size={24} />
-        </button>
-        {error && (
-          <div className="p-4 mb-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
-            <p>{error}</p>
-          </div>
-        )}
-        {isEditing ? (
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="title"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Title
-              </label>
-              <input
-                id="title"
-                type="text"
-                name="title"
-                value={editedSnippet.title}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-                placeholder="Title"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="content"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Content
-              </label>
-              <textarea
-                id="content"
-                name="content"
-                value={editedSnippet.content}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-                rows={10}
-                placeholder="Content"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="language"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Language
-              </label>
-              <select
-                id="language"
-                name="language"
-                value={editedSnippet.language}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-              >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="html">HTML</option>
-                <option value="css">CSS</option>
-                <option value="typescript">TypeScript</option>
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="tags"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Tags (comma-separated)
-              </label>
-              <input
-                id="tags"
-                type="text"
-                name="tags"
-                value={editedSnippet.tags.join(", ")}
-                onChange={handleTagsChange}
-                className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
-                placeholder="Tags (comma-separated)"
-              />
-            </div>
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">
-                Preview
-              </h3>
-              {renderHighlightedCode(
-                editedSnippet.content,
-                editedSnippet.language
-              )}
-            </div>
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 pr-8">
-                {snippet.title}
-              </h2>
-              <button
-                onClick={handleToggleFavorite}
-                className="p-1 rounded-full hover:bg-gray-200 transition-colors"
-                title={
-                  snippet.favorite
-                    ? "Remove from favorites"
-                    : "Add to favorites"
-                }
-              >
-                <Star
-                  size={24}
-                  className={
-                    snippet.favorite
-                      ? "text-yellow-500 fill-current"
-                      : "text-gray-400"
-                  }
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="relative bg-background w-full max-w-4xl m-4 rounded-lg border shadow-lg max-h-[90vh] overflow-y-auto">
+        <div className="p-6 space-y-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-4 top-4"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {isEditing ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={editedTitle}
+                  onChange={handleInputChange}
+                  placeholder="Title"
                 />
-              </button>
-            </div>
-            <div className="mb-4">
-              {renderHighlightedCode(snippet.content, snippet.language)}
-            </div>
-            <div className="flex justify-between items-center">
-              <div>
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Language:{" "}
-                </span>
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {snippet.language}
-                </span>
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="p-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+
+              <div className="space-y-2">
+                <Label>Content</Label>
+                <Textarea
+                  id="content"
+                  name="content"
+                  value={editedCode}
+                  onChange={handleInputChange}
+                  rows={10}
+                  placeholder="Content"
+                  className="font-mono"
+                />
+              </div>
+
+              {editedCode && (
+                <div className="space-y-2">
+                  <Label>Preview</Label>
+                  <div className="rounded-lg border">
+                    {renderHighlightedCode(
+                      editedCode,
+                      editedLanguage,
+                      appTheme
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Language</Label>
+                <Select
+                  value={editedLanguage}
+                  onValueChange={(value) =>
+                    setEditedLanguage(value as Snippet["language"])
+                  }
                 >
-                  <Edit size={20} />
-                </button>
-                <button
-                  onClick={() => setShowDeleteConfirmation(true)}
-                  className="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
-                >
-                  <Trash2 size={20} />
-                </button>
-                <button
-                  onClick={onFullScreen}
-                  className="p-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  <Maximize2 size={20} />
-                </button>
-                <button
-                  onClick={handleCopy}
-                  className="p-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  {isCopied ? <Check size={20} /> : <Copy size={20} />}
-                </button>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="javascript">JavaScript</SelectItem>
+                    <SelectItem value="typescript">TypeScript</SelectItem>
+                    <SelectItem value="python">Python</SelectItem>
+                    <SelectItem value="html">HTML</SelectItem>
+                    <SelectItem value="css">CSS</SelectItem>
+                    <SelectItem value="java">Java</SelectItem>
+                    <SelectItem value="csharp">C#</SelectItem>
+                    <SelectItem value="php">PHP</SelectItem>
+                    <SelectItem value="ruby">Ruby</SelectItem>
+                    <SelectItem value="go">Go</SelectItem>
+                    <SelectItem value="rust">Rust</SelectItem>
+                    <SelectItem value="swift">Swift</SelectItem>
+                    <SelectItem value="kotlin">Kotlin</SelectItem>
+                    <SelectItem value="plaintext">Plain Text</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tags (comma-separated)</Label>
+                <Input
+                  id="tags"
+                  name="tags"
+                  value={editedTags.join(", ")}
+                  onChange={handleTagsChange}
+                  placeholder="Tags (comma-separated)"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave}>Save</Button>
               </div>
             </div>
-          </>
-        )}
-        {children}
-      </motion.div>
+          ) : (
+            <>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 pr-8">
+                  {snippet.title}
+                </h2>
+                <button
+                  onClick={handleToggleFavorite}
+                  className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+                  title={
+                    snippet.favorite
+                      ? "Remove from favorites"
+                      : "Add to favorites"
+                  }
+                >
+                  <Star
+                    size={24}
+                    className={
+                      snippet.favorite
+                        ? "text-yellow-500 fill-current"
+                        : "text-gray-400"
+                    }
+                  />
+                </button>
+              </div>
+              <div className="mb-4">
+                {renderHighlightedCode(
+                  snippet.content,
+                  snippet.language,
+                  appTheme
+                )}
+              </div>
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Language:{" "}
+                  </span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {snippet.language}
+                  </span>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="p-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <Edit size={20} />
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirmation(true)}
+                    className="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                  <button
+                    onClick={onFullScreen}
+                    className="p-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <Maximize2 size={20} />
+                  </button>
+                  <button
+                    onClick={handleCopy}
+                    className="p-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    {isCopied ? <Check size={20} /> : <Copy size={20} />}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+          {children}
+        </div>
+      </div>
       <AlertDialog
         open={showDeleteConfirmation}
         onOpenChange={setShowDeleteConfirmation}
@@ -383,7 +394,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </motion.div>
+    </div>
   );
 };
 
