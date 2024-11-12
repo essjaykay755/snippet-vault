@@ -114,7 +114,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
         setEditedCode(value);
         break;
       case "language":
-        setEditedLanguage(value);
+        setEditedLanguage(value as Snippet["language"]);
         break;
       case "description":
         setEditedDescription(value);
