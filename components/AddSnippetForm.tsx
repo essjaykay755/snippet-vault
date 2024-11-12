@@ -1,244 +1,167 @@
 "use client";
 
-import React, { useState } from "react";
-import { Highlight, themes, Language } from "prism-react-renderer";
-import { X } from "lucide-react";
-import { Snippet } from "../types/snippet";
-import { addDoc, collection } from "firebase/firestore";
+import { useState } from "react";
+import { collection, addDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "../contexts/AuthContext";
+import { Snippet } from "../types/snippet";
+import { toast } from "sonner";
 
 interface AddSnippetFormProps {
-  onSave: (snippet: Snippet) => void;
+  onSave: () => void;
   onClose: () => void;
 }
 
-const AddSnippetForm: React.FC<AddSnippetFormProps> = ({ onSave, onClose }) => {
+export default function AddSnippetForm({
+  onSave,
+  onClose,
+}: AddSnippetFormProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [language, setLanguage] = useState("");
+  const [language, setLanguage] = useState<Snippet["language"]>("javascript");
   const [tags, setTags] = useState("");
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!title.trim()) {
-      newErrors.title = "Title is required";
-    }
-
-    if (!content.trim()) {
-      newErrors.content = "Content is required";
-    }
-
-    if (!language) {
-      newErrors.language = "Language is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
 
-    if (!validateForm()) {
+    if (!title || !content) {
+      setError("Title and content are required.");
       return;
     }
 
-    const newSnippet: Omit<Snippet, "id"> = {
-      title: title.trim(),
-      content: content.trim(),
-      language: language as Snippet["language"],
-      tags: tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-      date: new Date().toISOString(),
-      userId: user.uid,
-      favorite: false,
-    };
+    if (!user) {
+      setError("You must be logged in to add snippets.");
+      return;
+    }
 
     try {
-      const docRef = await addDoc(collection(db, "snippets"), newSnippet);
-      onSave({ ...newSnippet, id: docRef.id });
-      onClose();
+      setError(null);
+
+      const tagsArray = tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== "");
+
+      const newSnippet: Omit<Snippet, "id"> = {
+        title: title.trim(),
+        content: content.trim(),
+        language: language as Snippet["language"],
+        description: description.trim(),
+        tags: tagsArray,
+        date: new Date().toISOString(),
+        userId: user.uid,
+        favorite: false,
+      };
+
+      await addDoc(collection(db, "snippets"), newSnippet);
+      toast.success("Snippet added successfully");
+      onSave();
     } catch (error) {
       console.error("Error adding snippet:", error);
+      setError("Failed to add snippet. Please try again.");
+      toast.error("Failed to add snippet");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="p-6 flex justify-between items-center border-b dark:border-gray-700">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-            Add New Snippet
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            <X size={24} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="flex-grow overflow-auto p-6">
-          <div className="space-y-6">
-            <div>
-              <label
-                htmlFor="title"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Title
-              </label>
-              <input
-                type="text"
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={`w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                  errors.title ? "border-red-500" : "border-gray-300"
-                }`}
-                required
-              />
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-500">{errors.title}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="language"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Language
-              </label>
-              <select
-                id="language"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className={`w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                  errors.language ? "border-red-500" : "border-gray-300"
-                }`}
-                required
-              >
-                <option value="">Select a language</option>
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="css">CSS</option>
-                <option value="html">HTML</option>
-                <option value="typescript">TypeScript</option>
-                <option value="java">Java</option>
-                <option value="csharp">C#</option>
-                <option value="php">PHP</option>
-                <option value="ruby">Ruby</option>
-                <option value="go">Go</option>
-                <option value="rust">Rust</option>
-                <option value="swift">Swift</option>
-                <option value="kotlin">Kotlin</option>
-                <option value="plaintext">Plain Text</option>
-              </select>
-              {errors.language && (
-                <p className="mt-1 text-sm text-red-500">{errors.language}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="content"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Content
-              </label>
-              <textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={10}
-                className={`w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                  errors.content ? "border-red-500" : "border-gray-300"
-                }`}
-                required
-              />
-              {errors.content && (
-                <p className="mt-1 text-sm text-red-500">{errors.content}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="preview"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Preview
-              </label>
-              <div className="border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
-                <Highlight
-                  theme={themes.nightOwl}
-                  code={content || "// Your code here"}
-                  language={language as Language}
-                >
-                  {({
-                    className,
-                    style,
-                    tokens,
-                    getLineProps,
-                    getTokenProps,
-                  }) => (
-                    <pre
-                      className={`${className} p-4`}
-                      style={{ ...style, minHeight: "200px" }}
-                    >
-                      {tokens.map((line, i) => (
-                        <div key={i} {...getLineProps({ line, key: i })}>
-                          {line.map((token, key) => (
-                            <span
-                              key={key}
-                              {...getTokenProps({ token, key })}
-                            />
-                          ))}
-                        </div>
-                      ))}
-                    </pre>
-                  )}
-                </Highlight>
-              </div>
-            </div>
-            <div>
-              <label
-                htmlFor="tags"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Tags (comma-separated)
-              </label>
-              <input
-                type="text"
-                id="tags"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
-            </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
+        <h2 className="text-2xl font-bold mb-4">Add New Snippet</h2>
+        {error && (
+          <div className="p-4 mb-4 bg-red-100 dark:bg-red-900 border-l-4 border-red-500 text-red-700 dark:text-red-200">
+            <p>{error}</p>
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              placeholder="Enter snippet title"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Description
+            </label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              placeholder="Enter snippet description (optional)"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Content</label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              rows={10}
+              placeholder="Enter your code snippet"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Language</label>
+            <select
+              value={language}
+              onChange={(e) =>
+                setLanguage(e.target.value as Snippet["language"])
+              }
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+            >
+              <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
+              <option value="python">Python</option>
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+              <option value="java">Java</option>
+              <option value="csharp">C#</option>
+              <option value="php">PHP</option>
+              <option value="ruby">Ruby</option>
+              <option value="go">Go</option>
+              <option value="rust">Rust</option>
+              <option value="swift">Swift</option>
+              <option value="kotlin">Kotlin</option>
+              <option value="plaintext">Plain Text</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Tags (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              placeholder="Enter tags (e.g., react, hooks, frontend)"
+            />
+          </div>
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+            >
+              Save
+            </button>
           </div>
         </form>
-        <div className="p-6 border-t dark:border-gray-700 flex justify-end space-x-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
-          >
-            Save
-          </button>
-        </div>
       </div>
     </div>
   );
-};
-
-export default AddSnippetForm;
+}
