@@ -12,15 +12,28 @@ import { Loader2, Menu } from "lucide-react";
 import SnippetGrid from "../components/SnippetGrid";
 import ClientSidebar from "../components/ClientSidebar";
 import { Snippet } from "../types/snippet";
+import { Header } from "@/components/Header";
+import Link from "next/link";
+import { FileCode2, Search, Tags, Share2 } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 
 export default function Home() {
   const { user, signInWithGoogle } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [filteredSnippets, setFilteredSnippets] = useState<Snippet[]>([]);
   const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // After mounting, we can show the UI
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -62,110 +75,166 @@ export default function Home() {
     }
   }, [user, fetchSnippets]);
 
-  const handleFilterChange = (
-    languages: string[],
-    tags: string[],
-    showFavorites: boolean
-  ) => {
-    let filtered = [...snippets];
+  const handleFilterChange = useCallback(
+    (languages: string[], tags: string[], showFavorites: boolean) => {
+      let filtered = [...snippets];
 
-    if (languages.length > 0) {
-      filtered = filtered.filter((snippet) =>
-        languages.includes(snippet.language)
-      );
-    }
+      if (languages.length > 0) {
+        filtered = filtered.filter((snippet) =>
+          languages.includes(snippet.language)
+        );
+      }
 
-    if (tags.length > 0) {
-      filtered = filtered.filter((snippet) =>
-        tags.every((tag) => snippet.tags?.includes(tag))
-      );
-    }
+      if (tags.length > 0) {
+        filtered = filtered.filter((snippet) =>
+          tags.every((tag) => snippet.tags?.includes(tag))
+        );
+      }
 
-    if (showFavorites) {
-      filtered = filtered.filter((snippet) => snippet.favorite);
-    }
+      if (showFavorites) {
+        filtered = filtered.filter((snippet) => snippet.favorite);
+      }
 
-    setFilteredSnippets(filtered);
-  };
+      setFilteredSnippets(filtered);
+    },
+    [snippets]
+  );
+
+  if (!mounted) {
+    return null;
+  }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
-        <Card className="w-full max-w-md mb-8">
-          <CardContent className="pt-6">
-            <h1 className="text-4xl font-bold text-center mb-2">
-              SnippetVault
-            </h1>
-            <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
-              Your personal code snippet manager
-            </p>
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+      <div className="min-h-screen flex flex-col bg-background">
+        {/* Header */}
+        <header className="border-b">
+          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+            <h1 className="text-2xl font-bold">SnippetVault</h1>
             <Button
-              variant="outline"
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
-              className="w-full"
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <FcGoogle className="mr-2 h-5 w-5" />
-              )}
-              Sign in with Google
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </Button>
-          </CardContent>
-        </Card>
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-semibold">Features</h2>
-          <ul className="space-y-2 text-gray-600 dark:text-gray-400">
-            <li>✨ Organize your code snippets</li>
-            <li>🔍 Easy search and retrieval</li>
-            <li>🏷️ Tag and categorize snippets</li>
-            <li>⭐ Mark favorites for quick access</li>
-            <li>🌓 Dark mode support</li>
-          </ul>
-        </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 container mx-auto px-4 py-16 flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="flex-1 space-y-6 text-center md:text-left">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">
+              Your Code Snippets,{" "}
+              <span className="text-primary">Organized</span>
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Store, manage, and share your code snippets with ease. Built for
+              developers, by developers.
+            </p>
+            <div className="space-y-4">
+              <Button
+                size="lg"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+                className="w-full md:w-auto"
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <FcGoogle className="mr-2 h-5 w-5" />
+                )}
+                Sign in with Google
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 grid grid-cols-2 gap-4 max-w-lg">
+            <Card className="p-4 space-y-2">
+              <FileCode2 className="h-8 w-8 text-primary" />
+              <h3 className="font-semibold">Code Organization</h3>
+              <p className="text-sm text-muted-foreground">
+                Keep your snippets organized and easily accessible
+              </p>
+            </Card>
+            <Card className="p-4 space-y-2">
+              <Search className="h-8 w-8 text-primary" />
+              <h3 className="font-semibold">Quick Search</h3>
+              <p className="text-sm text-muted-foreground">
+                Find your snippets instantly with powerful search
+              </p>
+            </Card>
+            <Card className="p-4 space-y-2">
+              <Tags className="h-8 w-8 text-primary" />
+              <h3 className="font-semibold">Smart Tagging</h3>
+              <p className="text-sm text-muted-foreground">
+                Organize with tags and categories
+              </p>
+            </Card>
+            <Card className="p-4 space-y-2">
+              <Share2 className="h-8 w-8 text-primary" />
+              <h3 className="font-semibold">Easy Sharing</h3>
+              <p className="text-sm text-muted-foreground">
+                Share snippets with your team
+              </p>
+            </Card>
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="border-t">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="text-sm text-muted-foreground">
+                © 2024 SnippetVault. All rights reserved.
+              </div>
+              <nav className="flex items-center gap-4">
+                <Link href="/about" className="text-sm hover:text-primary">
+                  About
+                </Link>
+                <Link href="/privacy" className="text-sm hover:text-primary">
+                  Privacy
+                </Link>
+                <Link href="/terms" className="text-sm hover:text-primary">
+                  Terms
+                </Link>
+                <Link href="/contact" className="text-sm hover:text-primary">
+                  Contact
+                </Link>
+              </nav>
+            </div>
+          </div>
+        </footer>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen">
       <ClientSidebar
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(false)}
         onFilterChange={handleFilterChange}
-        isOpen={isSidebarOpen}
-        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onAddSnippet={() => setIsAddSnippetModalOpen(true)}
         snippets={snippets}
         onSnippetsChange={fetchSnippets}
       />
-      <main className="flex-1 p-4 md:p-8">
-        <div className="md:hidden mb-4">
-          <Button
-            variant="ghost"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2"
-          >
-            <Menu size={24} />
-          </Button>
-        </div>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <SnippetGrid
-          snippets={filteredSnippets}
-          onSnippetsChange={fetchSnippets}
-          isAddSnippetModalOpen={isAddSnippetModalOpen}
-          setIsAddSnippetModalOpen={setIsAddSnippetModalOpen}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header onToggleSidebar={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-auto p-4">
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <SnippetGrid
+            snippets={filteredSnippets}
+            onSnippetsChange={fetchSnippets}
+            isAddSnippetModalOpen={isAddSnippetModalOpen}
+            setIsAddSnippetModalOpen={setIsAddSnippetModalOpen}
+          />
+        </main>
+      </div>
     </div>
   );
 }

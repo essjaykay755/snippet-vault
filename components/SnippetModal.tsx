@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 interface SnippetModalProps {
   snippet: Snippet;
@@ -42,6 +43,13 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
   const [isCopied, setIsCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(snippet.title);
+  const [editedCode, setEditedCode] = useState(snippet.content);
+  const [editedLanguage, setEditedLanguage] = useState(snippet.language);
+  const [editedDescription, setEditedDescription] = useState(
+    snippet.description || ""
+  );
+  const [editedTags, setEditedTags] = useState(snippet.tags || []);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(snippet.content);
@@ -52,19 +60,31 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
   const handleSave = async () => {
     try {
       setError(null);
+      const updatedSnippet: Snippet = {
+        ...snippet,
+        title: editedTitle,
+        content: editedCode,
+        language: editedLanguage,
+        description: editedDescription,
+        tags: editedTags,
+      };
+
       const snippetRef = doc(db, "snippets", snippet.id);
       await updateDoc(snippetRef, {
-        title: editedSnippet.title,
-        content: editedSnippet.content,
-        language: editedSnippet.language,
-        tags: editedSnippet.tags.filter((tag) => tag.trim() !== ""),
-        favorite: editedSnippet.favorite,
+        title: editedTitle,
+        content: editedCode,
+        language: editedLanguage,
+        description: editedDescription,
+        tags: editedTags,
       });
-      onEdit(editedSnippet);
+
       setIsEditing(false);
+      onEdit(updatedSnippet);
+      toast.success("Changes saved successfully");
     } catch (error) {
       console.error("Error updating snippet:", error);
       setError("Failed to update snippet. Please try again.");
+      toast.error("Failed to save changes");
     }
   };
 

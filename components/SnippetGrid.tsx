@@ -9,35 +9,37 @@ import AddSnippetCard from "./AddSnippetCard";
 import AddSnippetForm from "./AddSnippetForm";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, Menu } from "lucide-react";
+import { Search, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface SnippetGridProps {
   snippets: Snippet[];
   onSnippetsChange: () => Promise<void>;
   isAddSnippetModalOpen: boolean;
-  setIsAddSnippetModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  onToggleSidebar: () => void;
+  setIsAddSnippetModalOpen: (isOpen: boolean) => void;
 }
 
-const SnippetGrid: React.FC<SnippetGridProps> = ({
+export default function SnippetGrid({
   snippets,
   onSnippetsChange,
   isAddSnippetModalOpen,
   setIsAddSnippetModalOpen,
-  onToggleSidebar,
-}) => {
+}: SnippetGridProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleUpdate = () => {
-    onSnippetsChange();
+  const handleUpdate = async () => {
+    await onSnippetsChange();
+    toast.success("Snippet updated successfully");
   };
 
   const handleDelete = async (snippetId: string) => {
     try {
       await deleteDoc(doc(db, "snippets", snippetId));
-      onSnippetsChange();
+      await onSnippetsChange();
+      toast.success("Snippet deleted successfully");
     } catch (error) {
       console.error("Error deleting snippet:", error);
+      toast.error("Failed to delete snippet");
     }
   };
 
@@ -45,9 +47,11 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
     try {
       const snippetRef = doc(db, "snippets", snippetId);
       await updateDoc(snippetRef, { favorite });
-      onSnippetsChange();
+      await onSnippetsChange();
+      toast.success(favorite ? "Added to favorites" : "Removed from favorites");
     } catch (error) {
       console.error("Error updating favorite status:", error);
+      toast.error("Failed to update favorite status");
     }
   };
 
@@ -61,34 +65,23 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <div className="flex items-center w-full sm:w-auto mb-4 sm:mb-0">
-          <Button
-            variant="ghost"
-            className="mr-2 sm:hidden"
-            onClick={onToggleSidebar}
-          >
-            <Menu size={24} />
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Your Snippets
-          </h1>
-        </div>
+      <div className="flex justify-end w-full">
         <div className="relative w-full sm:w-64">
           <Input
             type="text"
             placeholder="Search snippets..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-10 text-gray-900 dark:text-gray-100"
+            className="pl-10 pr-10"
           />
           <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
             size={20}
           />
           {searchTerm && (
             <Button
               variant="ghost"
+              size="icon"
               className="absolute right-2 top-1/2 transform -translate-y-1/2"
               onClick={clearSearch}
             >
@@ -97,11 +90,13 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
           )}
         </div>
       </div>
+
       {searchTerm && (
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-sm text-muted-foreground">
           Search results for "{searchTerm}"
         </p>
       )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AddSnippetCard onClick={() => setIsAddSnippetModalOpen(true)} />
         {filteredSnippets.map((snippet) => (
@@ -114,17 +109,17 @@ const SnippetGrid: React.FC<SnippetGridProps> = ({
           />
         ))}
       </div>
+
       {isAddSnippetModalOpen && (
         <AddSnippetForm
-          onSave={() => {
+          onSave={async () => {
             setIsAddSnippetModalOpen(false);
-            onSnippetsChange();
+            await onSnippetsChange();
+            toast.success("New snippet added successfully");
           }}
           onClose={() => setIsAddSnippetModalOpen(false)}
         />
       )}
     </div>
   );
-};
-
-export default SnippetGrid;
+}

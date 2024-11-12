@@ -8,6 +8,9 @@ import SnippetModal from "./SnippetModal";
 import { useRouter } from "next/navigation";
 import { Snippet } from "../types/snippet";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
+import { updateDoc, doc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 interface SnippetCardProps {
   snippet: Snippet;
@@ -54,6 +57,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
     e.stopPropagation();
     navigator.clipboard.writeText(snippet.content);
     setIsCopied(true);
+    toast.success("Code copied to clipboard");
     setTimeout(() => setIsCopied(false), 2000);
   };
 
@@ -62,6 +66,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
     const link = `${window.location.origin}/snippet/${snippet.id}`;
     navigator.clipboard.writeText(link);
     setIsLinkCopied(true);
+    toast.success("Link copied to clipboard");
     setTimeout(() => setIsLinkCopied(false), 2000);
   };
 
@@ -81,6 +86,11 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
       month: "long",
       day: "numeric",
     })}`;
+  };
+
+  const handleEdit = (updatedSnippet: Snippet) => {
+    onUpdate();
+    setIsModalOpen(false);
   };
 
   return (
@@ -191,7 +201,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
         <SnippetModal
           snippet={snippet}
           onClose={() => setIsModalOpen(false)}
-          onEdit={onUpdate}
+          onEdit={handleEdit}
           onDelete={() => {
             onDelete();
             setIsModalOpen(false);

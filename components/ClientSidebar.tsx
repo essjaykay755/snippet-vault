@@ -3,20 +3,36 @@
 import React, { useState, useEffect } from "react";
 import {
   RefreshCw,
-  LogOut,
   Plus,
+  Star,
+  User2,
+  ChevronDown,
   Info,
   Shield,
   FileText,
-  Sun,
-  Moon,
-  Star,
   X,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 import { Snippet } from "../types/snippet";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface ClientSidebarProps {
   onFilterChange: (
@@ -53,7 +69,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -80,41 +96,36 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
     await onSnippetsChange();
   };
 
-  const handleLanguageChange = async (language: string) => {
+  const handleLanguageChange = (language: string) => {
     const updatedLanguages = selectedLanguages.includes(language)
       ? selectedLanguages.filter((l) => l !== language)
       : [...selectedLanguages, language];
     setSelectedLanguages(updatedLanguages);
     onFilterChange(updatedLanguages, selectedTags, showFavorites);
-    await onSnippetsChange();
   };
 
-  const handleTagChange = async (tag: string) => {
+  const handleTagChange = (tag: string) => {
     const updatedTags = selectedTags.includes(tag)
       ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
     setSelectedTags(updatedTags);
     onFilterChange(selectedLanguages, updatedTags, showFavorites);
-    await onSnippetsChange();
   };
 
-  const handleFavoritesChange = async () => {
+  const handleFavoritesChange = () => {
     const newShowFavorites = !showFavorites;
     setShowFavorites(newShowFavorites);
     onFilterChange(selectedLanguages, selectedTags, newShowFavorites);
-    await onSnippetsChange();
   };
 
-  const clearLanguages = async () => {
+  const clearLanguages = () => {
     setSelectedLanguages([]);
     onFilterChange([], selectedTags, showFavorites);
-    await onSnippetsChange();
   };
 
-  const clearTags = async () => {
+  const clearTags = () => {
     setSelectedTags([]);
     onFilterChange(selectedLanguages, [], showFavorites);
-    await onSnippetsChange();
   };
 
   const handleSignOut = async () => {
@@ -126,171 +137,208 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   };
 
   return (
-    <div
-      className={`fixed inset-y-0 left-0 transform ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      } md:relative md:translate-x-0 transition duration-200 ease-in-out z-40 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-72 p-4 border-r dark:border-gray-800 overflow-y-auto flex flex-col`}
+    <Sidebar
+      className={cn(
+        "fixed inset-y-0 left-0 z-40",
+        "md:relative",
+        !isOpen && "-translate-x-full md:translate-x-0",
+        "transition-transform duration-200 ease-in-out"
+      )}
     >
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">SnippetVault</h1>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label={
-              isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-            }
-          >
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          <button
+      <SidebarHeader className="border-b">
+        <div className="flex items-center justify-between py-2 px-4">
+          <h1 className="text-xl font-semibold leading-none">SnippetVault</h1>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onToggle}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="Close sidebar"
+            className="h-8 w-8 md:hidden"
           >
-            <X size={20} />
-          </button>
+            <X size={16} />
+          </Button>
         </div>
-      </div>
-      <button
-        onClick={onAddSnippet}
-        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
-      >
-        <Plus size={20} className="mr-2" />
-        Add New Snippet
-      </button>
-      <h2 className="text-lg font-semibold mb-4">Filters</h2>
+      </SidebarHeader>
 
-      <div className="mb-6 flex-grow">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-md font-medium">Languages</h3>
-          {selectedLanguages.length > 0 && (
-            <button
-              onClick={clearLanguages}
-              className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center"
+      <SidebarContent className="flex flex-col flex-grow">
+        <div className="px-4 py-2">
+          <Button onClick={onAddSnippet} className="w-full" size="sm">
+            <Plus size={16} className="mr-2" />
+            Add New Snippet
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="px-4">
+            <h2 className="mb-2 text-sm font-semibold">Filters</h2>
+            <Button
+              variant="ghost"
+              onClick={handleFavoritesChange}
+              className={cn(
+                "w-full justify-start",
+                showFavorites && "bg-accent"
+              )}
             >
-              <RefreshCw size={14} className="mr-1" />
-              Clear Languages
-            </button>
+              <Star size={16} className="mr-2" />
+              Favorites
+            </Button>
+          </div>
+
+          <div className="px-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold">Languages</h2>
+              {selectedLanguages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearLanguages}
+                  className="h-6 px-2"
+                >
+                  <RefreshCw size={12} className="mr-1" />
+                  Clear
+                </Button>
+              )}
+            </div>
+            <div className="space-y-1">
+              {languages.map((language) => (
+                <Button
+                  key={language}
+                  variant="ghost"
+                  onClick={() => handleLanguageChange(language)}
+                  className={cn(
+                    "w-full justify-start",
+                    selectedLanguages.includes(language) && "bg-accent"
+                  )}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full mr-2 ${
+                      languageColors[language] || "bg-gray-400"
+                    }`}
+                  />
+                  {language}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {tags.length > 0 && (
+            <div className="px-4">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-sm font-semibold">Tags</h2>
+                {selectedTags.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearTags}
+                    className="h-6 px-2"
+                  >
+                    <RefreshCw size={12} className="mr-1" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+              <div className="space-y-1">
+                {tags.map((tag) => (
+                  <Button
+                    key={tag}
+                    variant="ghost"
+                    onClick={() => handleTagChange(tag)}
+                    className={cn(
+                      "w-full justify-start",
+                      selectedTags.includes(tag) && "bg-accent"
+                    )}
+                  >
+                    {tag}
+                  </Button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-        <div className="space-y-2">
-          {languages.map((language) => (
-            <button
-              key={language}
-              onClick={() => handleLanguageChange(language)}
-              className={`flex items-center w-full px-2 py-1 rounded-md transition-colors text-left ${
-                selectedLanguages.includes(language)
-                  ? "bg-gray-200 dark:bg-gray-700"
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
-              }`}
-            >
-              <span
-                className={`w-3 h-3 rounded-full mr-2 ${
-                  languageColors[language] || "bg-gray-400 dark:bg-gray-600"
-                }`}
-              ></span>
-              {language}
-            </button>
-          ))}
-        </div>
-      </div>
+      </SidebarContent>
 
-      {tags.length > 0 && (
-        <div className="mb-6 flex-grow">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-md font-medium">Tags</h3>
-            {selectedTags.length > 0 && (
-              <button
-                onClick={clearTags}
-                className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center"
+      <SidebarFooter className="border-t">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent rounded-none transition-colors"
+            >
+              <div className="flex items-center gap-3 flex-1">
+                <Avatar className="h-9 w-9">
+                  {user?.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.displayName || "User avatar"}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10">
+                      <User2 size={20} />
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="flex flex-col text-left">
+                  <span className="text-sm font-medium">
+                    {user?.displayName || "User"}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                    {user?.email || "user@example.com"}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown size={16} className="text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[240px]">
+            <DropdownMenuItem asChild>
+              <Link
+                href="/about"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer"
               >
-                <RefreshCw size={14} className="mr-1" />
-                Clear Tags
-              </button>
-            )}
-          </div>
-          <div className="space-y-2">
-            {tags.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => handleTagChange(tag)}
-                className={`w-full px-2 py-1 rounded-md transition-colors text-left ${
-                  selectedTags.includes(tag)
-                    ? "bg-gray-200 dark:bg-gray-700"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
+                <Info size={16} />
+                <span>About</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/privacy"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer"
               >
-                {tag}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="mb-6">
-        <button
-          onClick={handleFavoritesChange}
-          className={`flex items-center w-full px-2 py-1 rounded-md transition-colors text-left ${
-            showFavorites
-              ? "bg-gray-200 dark:bg-gray-700"
-              : "hover:bg-gray-100 dark:hover:bg-gray-800"
-          }`}
-        >
-          <Star
-            size={16}
-            className={`mr-2 ${
-              showFavorites ? "text-yellow-500 fill-current" : "text-gray-400"
-            }`}
-          />
-          Favorites
-        </button>
-      </div>
-
-      <div className="mt-auto">
-        <Button
-          onClick={handleSignOut}
-          className="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center justify-center mb-4"
-        >
-          <LogOut size={18} className="mr-2" />
-          Sign Out
-        </Button>
-        <div className="text-center text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-800 pt-4">
-          <div className="flex justify-center space-x-4 mb-2">
-            <Link
-              href="/about"
-              className="text-blue-500 dark:text-blue-400 hover:underline flex items-center"
+                <Shield size={16} />
+                <span>Privacy</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/terms"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer"
+              >
+                <FileText size={16} />
+                <span>Terms</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <div className="px-3 py-2 text-xs text-center text-muted-foreground">
+              Made with ❤️ and ☕️ by{" "}
+              <Link
+                href="https://github.com/essjaykay755"
+                className="hover:underline"
+              >
+                Subhojit Karmakar
+              </Link>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-3 py-2 text-red-600 dark:text-red-400 cursor-pointer"
             >
-              <Info size={14} className="mr-1" />
-              About
-            </Link>
-            <Link
-              href="/privacy"
-              className="text-blue-500 dark:text-blue-400 hover:underline flex items-center"
-            >
-              <Shield size={14} className="mr-1" />
-              Privacy
-            </Link>
-            <Link
-              href="/terms"
-              className="text-blue-500 dark:text-blue-400 hover:underline flex items-center"
-            >
-              <FileText size={14} className="mr-1" />
-              Terms
-            </Link>
-          </div>
-          <div>
-            Made with ❤️ and ☕️ by{" "}
-            <Link
-              href="https://github.com/essjaykay755"
-              className="text-blue-500 dark:text-blue-400 hover:underline"
-            >
-              Subhojit Karmakar
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+              <LogOut size={16} />
+              <span>Sign out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 };
 
