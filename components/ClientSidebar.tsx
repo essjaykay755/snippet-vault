@@ -44,7 +44,6 @@ interface ClientSidebarProps {
   onToggle: () => void;
   onAddSnippet: () => void;
   snippets: Snippet[];
-  onSnippetsChange: () => Promise<void>;
 }
 
 const languageColors: { [key: string]: string } = {
@@ -61,7 +60,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   onToggle,
   onAddSnippet,
   snippets,
-  onSnippetsChange,
 }) => {
   const [languages, setLanguages] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);

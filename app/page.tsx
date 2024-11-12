@@ -215,7 +215,6 @@ export default function Home() {
         onFilterChange={handleFilterChange}
         onAddSnippet={() => setIsAddSnippetModalOpen(true)}
         snippets={snippets}
-        onSnippetsChange={fetchSnippets}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onToggleSidebar={() => setIsSidebarOpen(true)} />
