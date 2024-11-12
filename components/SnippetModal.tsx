@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Highlight, themes, Language } from "prism-react-renderer";
 import { Maximize2, Edit, Trash2, Copy, Check, X, Star } from "lucide-react";
 import { Snippet } from "../types/snippet";
