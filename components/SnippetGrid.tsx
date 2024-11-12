@@ -93,7 +93,7 @@ export default function SnippetGrid({
 
       {searchTerm && (
         <p className="text-sm text-muted-foreground">
-          Search results for "{searchTerm}"
+          Search results for &quot;{searchTerm}&quot;
         </p>
       )}
 

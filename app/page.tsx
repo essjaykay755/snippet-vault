@@ -6,16 +6,15 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { FcGoogle } from "react-icons/fc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Menu } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import SnippetGrid from "../components/SnippetGrid";
 import ClientSidebar from "../components/ClientSidebar";
 import { Snippet } from "../types/snippet";
 import { Header } from "@/components/Header";
 import Link from "next/link";
-import { FileCode2, Search, Tags, Share2 } from "lucide-react";
-import { Sun, Moon } from "lucide-react";
+import { FileCode2, Search, Tags, Share2, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export default function Home() {
@@ -27,7 +26,6 @@ export default function Home() {
   const [filteredSnippets, setFilteredSnippets] = useState<Snippet[]>([]);
   const [isAddSnippetModalOpen, setIsAddSnippetModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // After mounting, we can show the UI
@@ -212,15 +210,15 @@ export default function Home() {
   return (
     <div className="flex h-screen">
       <ClientSidebar
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(false)}
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(false)}
         onFilterChange={handleFilterChange}
         onAddSnippet={() => setIsAddSnippetModalOpen(true)}
         snippets={snippets}
         onSnippetsChange={fetchSnippets}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header onToggleSidebar={() => setSidebarOpen(true)} />
+        <Header onToggleSidebar={() => setIsSidebarOpen(true)} />
         <main className="flex-1 overflow-auto p-4">
           {error && (
             <Alert variant="destructive" className="mb-4">

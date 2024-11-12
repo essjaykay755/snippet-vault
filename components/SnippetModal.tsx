@@ -106,18 +106,32 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
     >
   ) => {
     const { name, value } = e.target;
+    switch (name) {
+      case "title":
+        setEditedTitle(value);
+        break;
+      case "content":
+        setEditedCode(value);
+        break;
+      case "language":
+        setEditedLanguage(value);
+        break;
+      case "description":
+        setEditedDescription(value);
+        break;
+      default:
+        break;
+    }
     setEditedSnippet((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setEditedSnippet((prev) => ({
-      ...prev,
-      tags: value
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag !== ""),
-    }));
+    const tags = e.target.value
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag !== "");
+    setEditedTags(tags);
+    setEditedSnippet((prev) => ({ ...prev, tags }));
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {

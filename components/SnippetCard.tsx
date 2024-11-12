@@ -7,10 +7,7 @@ import { Copy, Check, Link as LinkIcon, Star } from "lucide-react";
 import SnippetModal from "./SnippetModal";
 import { useRouter } from "next/navigation";
 import { Snippet } from "../types/snippet";
-import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { updateDoc, doc } from "firebase/firestore";
-import { db } from "../lib/firebase";
 
 interface SnippetCardProps {
   snippet: Snippet;
@@ -47,7 +44,6 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [formattedDate, setFormattedDate] = useState("");
   const router = useRouter();
-  const { theme } = useTheme();
 
   useEffect(() => {
     setFormattedDate(formatDate(snippet.date));
@@ -88,7 +84,7 @@ const SnippetCard: React.FC<SnippetCardProps> = ({
     })}`;
   };
 
-  const handleEdit = (updatedSnippet: Snippet) => {
+  const handleEdit = () => {
     onUpdate();
     setIsModalOpen(false);
   };

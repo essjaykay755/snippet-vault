@@ -48,9 +48,9 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold">About the Developer</h2>
           <div className="p-6 rounded-lg border bg-card">
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Hi! I'm Subhojit Karmakar, a passionate full-stack developer with
-              a love for creating tools that make developers' lives easier.
-              SnippetVault was born from my own need for a better way to
+              Hi! I&apos;m Subhojit Karmakar, a passionate full-stack developer
+              with a love for creating tools that make developers&apos; lives
+              easier. SnippetVault was born from my own need for a better way to
               organize code snippets.
             </p>
             <div className="mt-4 flex flex-col gap-2">

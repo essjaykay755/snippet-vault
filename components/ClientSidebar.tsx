@@ -31,8 +31,8 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface ClientSidebarProps {
   onFilterChange: (
@@ -266,9 +266,11 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
               <div className="flex items-center gap-3 flex-1">
                 <Avatar className="h-9 w-9">
                   {user?.photoURL ? (
-                    <img
+                    <Image
                       src={user.photoURL}
                       alt={user.displayName || "User avatar"}
+                      width={36}
+                      height={36}
                       className="rounded-full"
                     />
                   ) : (
