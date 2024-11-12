@@ -68,15 +68,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const { user, signOut } = useAuth();
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isDark = document.documentElement.classList.contains("dark");
-      setIsDarkMode(isDark);
-    }
-  }, []);
 
   useEffect(() => {
     const uniqueLanguages = Array.from(
@@ -89,12 +81,6 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
     setLanguages(uniqueLanguages);
     setTags(uniqueTags);
   }, [snippets]);
-
-  const toggleDarkMode = async () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle("dark");
-    await onSnippetsChange();
-  };
 
   const handleLanguageChange = (language: string) => {
     const updatedLanguages = selectedLanguages.includes(language)
