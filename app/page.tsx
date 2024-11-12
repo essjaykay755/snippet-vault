@@ -100,7 +100,7 @@ export default function Home() {
 
   // Use onAuthStateChanged from Firebase Auth
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(() => {
       setIsLoading(false);
     });
 
