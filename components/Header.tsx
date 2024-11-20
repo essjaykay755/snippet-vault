@@ -17,24 +17,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return (
-      <div className="flex items-center h-14 border-b px-4 md:px-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="mr-4 md:hidden"
-          onClick={onToggleSidebar}
-        >
-          <Menu className="h-6 w-6" />
-        </Button>
-        <h1 className="text-2xl font-bold">Your Snippets</h1>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center h-14 border-b px-4 md:px-6">
+  const headerContent = (
+    <div className="flex items-center h-14 border-b px-4 md:px-6 bg-background">
       <Button
         variant="ghost"
         size="icon"
@@ -56,4 +40,10 @@ export function Header({ onToggleSidebar }: HeaderProps) {
       </div>
     </div>
   );
+
+  if (!mounted) {
+    return headerContent;
+  }
+
+  return headerContent;
 }

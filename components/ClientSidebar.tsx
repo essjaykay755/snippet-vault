@@ -121,12 +121,10 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
   };
 
   return (
-    <Sidebar
+    <Sidebar 
       className={cn(
-        "fixed inset-y-0 left-0 z-40",
-        "md:relative",
-        !isOpen && "-translate-x-full md:translate-x-0",
-        "transition-transform duration-200 ease-in-out"
+        "fixed md:static top-0 left-0 h-full z-40 bg-background transition-all duration-300 border-r",
+        isOpen ? "w-[240px] translate-x-0" : "w-[240px] -translate-x-full md:translate-x-0"
       )}
     >
       <SidebarHeader className="border-b">
@@ -136,7 +134,7 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
             variant="ghost"
             size="icon"
             onClick={onToggle}
-            className="h-8 w-8 md:hidden"
+            className="h-8 w-8 md:hidden absolute right-2 top-3"
           >
             <X size={16} />
           </Button>
@@ -240,40 +238,27 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({
         </div>
       </SidebarContent>
 
-      <SidebarFooter className="border-t">
+      <SidebarFooter>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent rounded-none transition-colors"
-            >
-              <div className="flex items-center gap-3 flex-1">
-                <Avatar className="h-9 w-9">
-                  {user?.photoURL ? (
-                    <Image
-                      src={user.photoURL}
-                      alt={user.displayName || "User avatar"}
-                      width={36}
-                      height={36}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <AvatarFallback className="bg-primary/10">
-                      <User2 size={20} />
-                    </AvatarFallback>
-                  )}
+            <div className="flex h-[52px] items-center justify-between w-full p-4 cursor-pointer hover:bg-accent">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>
+                    {user?.email?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col text-left">
-                  <span className="text-sm font-medium">
-                    {user?.displayName || "User"}
-                  </span>
-                  <span className="text-xs text-muted-foreground truncate max-w-[150px]">
-                    {user?.email || "user@example.com"}
-                  </span>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {user?.displayName || user?.email?.split('@')[0] || "User"}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user?.email}
+                  </p>
                 </div>
               </div>
-              <ChevronDown size={16} className="text-muted-foreground" />
-            </Button>
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[240px]">
             <DropdownMenuItem asChild>

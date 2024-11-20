@@ -21,6 +21,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { X } from "lucide-react";
 import { Highlight, themes, Language } from "prism-react-renderer";
 import { useTheme } from "next-themes";
+import { Badge } from "@/components/ui/badge";
 
 interface AddSnippetFormProps {
   onSave: () => void;
@@ -34,12 +35,13 @@ export default function AddSnippetForm({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [language, setLanguage] = useState<Snippet["language"]>("javascript");
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const { theme: appTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -63,10 +65,7 @@ export default function AddSnippetForm({
     try {
       setError(null);
 
-      const tagsArray = tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag !== "");
+      const tagsArray = tags.filter((tag: string) => tag.trim() !== "");
 
       const newSnippet: Omit<Snippet, "id"> = {
         title: title.trim(),
@@ -87,6 +86,36 @@ export default function AddSnippetForm({
       setError("Failed to add snippet. Please try again.");
       toast.error("Failed to add snippet");
     }
+  };
+
+  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setTagInput(value);
+
+    if (value.endsWith(',')) {
+      const tag = value.slice(0, -1).trim();
+      if (tag && !tags.includes(tag)) {
+        setTags(prevTags => [...prevTags, tag]);
+        setTagInput('');
+      } else {
+        setTagInput('');
+      }
+    }
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault();
+      const tag = tagInput.trim();
+      if (!tags.includes(tag)) {
+        setTags(prevTags => [...prevTags, tag]);
+      }
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (indexToRemove: number) => {
+    setTags(prevTags => prevTags.filter((_, index) => index !== indexToRemove));
   };
 
   return (
@@ -201,12 +230,34 @@ export default function AddSnippetForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Tags (comma-separated)</Label>
+            <Label>Tags</Label>
             <Input
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="Enter tags (e.g., react, hooks, frontend)"
+              type="text"
+              placeholder="Type and press Enter or add comma to create tags"
+              value={tagInput}
+              onChange={handleTagsChange}
+              onKeyDown={handleTagKeyDown}
             />
+            <div className="flex flex-wrap gap-2 mt-2">
+              {tags.map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
+                  {tag}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 p-0 hover:bg-transparent"
+                    onClick={() => removeTag(index)}
+                  >
+                    <X size={12} />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
           </div>
 
           <div className="flex justify-end gap-2">

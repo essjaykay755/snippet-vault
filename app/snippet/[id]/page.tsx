@@ -7,12 +7,16 @@ import { db } from "../../../lib/firebase";
 import { Highlight, themes, Language } from "prism-react-renderer";
 import { ArrowLeft, Copy, Check } from "lucide-react";
 import { Snippet } from "../../../types/snippet";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useTheme } from "next-themes";
 
 const SnippetPage = () => {
   const [snippet, setSnippet] = useState<Snippet | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const params = useParams();
   const router = useRouter();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchSnippet = async () => {
@@ -42,48 +46,60 @@ const SnippetPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <button
+    <div className="container max-w-4xl mx-auto px-4 py-8">
+      <Button
+        variant="ghost"
         onClick={() => router.back()}
-        className="mb-4 flex items-center text-blue-500 hover:text-blue-600"
+        className="mb-6 -ml-2 text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft size={20} className="mr-2" />
+        <ArrowLeft size={16} className="mr-2" />
         Back to Snippets
-      </button>
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div className="p-6">
-          <h1 className="text-3xl font-bold mb-4">{snippet.title}</h1>
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <span className="text-sm text-gray-500">Language: </span>
-              <span className="text-sm font-medium">{snippet.language}</span>
-            </div>
-            <button
+      </Button>
+
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-3xl font-bold tracking-tight">{snippet.title}</h1>
+          <div className="flex items-center gap-4">
+            <Badge variant="secondary" className="text-sm">
+              {snippet.language}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleCopy}
-              className="flex items-center px-3 py-1 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+              className="h-8"
             >
               {isCopied ? (
                 <>
-                  <Check size={16} className="mr-2" />
+                  <Check size={14} className="mr-2" />
                   Copied!
                 </>
               ) : (
                 <>
-                  <Copy size={16} className="mr-2" />
-                  Copy
+                  <Copy size={14} className="mr-2" />
+                  Copy code
                 </>
               )}
-            </button>
+            </Button>
           </div>
+        </div>
+
+        <div className="rounded-lg border bg-card">
           <Highlight
-            theme={themes.dracula}
+            theme={theme === 'dark' ? themes.dracula : themes.github}
             code={snippet.content}
             language={snippet.language as Language}
           >
             {({ className, style, tokens, getLineProps, getTokenProps }) => (
-              <pre className={`${className} p-4 rounded-md`} style={style}>
+              <pre 
+                className={`${className} p-4 overflow-x-auto`} 
+                style={{ ...style, backgroundColor: 'transparent' }}
+              >
                 {tokens.map((line, i) => (
                   <div key={i} {...getLineProps({ line, key: i })}>
+                    <span className="text-muted-foreground mr-4 select-none">
+                      {(i + 1).toString().padStart(2, '0')}
+                    </span>
                     {line.map((token, key) => (
                       <span key={key} {...getTokenProps({ token, key })} />
                     ))}
@@ -92,18 +108,17 @@ const SnippetPage = () => {
               </pre>
             )}
           </Highlight>
-          <div className="mt-4">
-            <span className="text-sm text-gray-500">Tags: </span>
+        </div>
+
+        {snippet.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
             {snippet.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-              >
+              <Badge key={index} variant="outline">
                 {tag}
-              </span>
+              </Badge>
             ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

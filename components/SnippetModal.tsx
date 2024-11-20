@@ -31,6 +31,7 @@ import {
 import { Alert } from "@/components/ui/alert";
 import { AlertDescription } from "@/components/ui/alert";
 import { useTheme } from "next-themes";
+import { Badge } from "@/components/ui/badge";
 
 interface SnippetModalProps {
   snippet: Snippet;
@@ -174,12 +175,19 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
   };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const tags = e.target.value
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag !== "");
-    setEditedTags(tags);
-    setEditedSnippet((prev) => ({ ...prev, tags }));
+    const value = e.target.value;
+    
+    if (value.endsWith(',')) {
+      const newTags = value
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+      
+      setEditedTags(Array.from(new Set(newTags)));
+      e.target.value = '';
+    } else {
+      setEditedTags(value.split(',').map(tag => tag.trim()));
+    }
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -278,14 +286,35 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label>Tags (comma-separated)</Label>
+                <Label>Tags</Label>
                 <Input
-                  id="tags"
-                  name="tags"
-                  value={editedTags.join(", ")}
+                  type="text"
+                  placeholder="Add tags separated by commas"
                   onChange={handleTagsChange}
-                  placeholder="Tags (comma-separated)"
+                  value={editedTags.join(', ')}
                 />
+                {editedTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {editedTags.map((tag, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        {tag}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-4 p-0 hover:bg-transparent"
+                          onClick={() => setEditedTags(editedTags.filter((_, i) => i !== index))}
+                        >
+                          <X size={12} />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2">
