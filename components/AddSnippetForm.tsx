@@ -96,10 +96,8 @@ export default function AddSnippetForm({
       const tag = value.slice(0, -1).trim();
       if (tag && !tags.includes(tag)) {
         setTags(prevTags => [...prevTags, tag]);
-        setTagInput('');
-      } else {
-        setTagInput('');
       }
+      setTagInput('');
     }
   };
 

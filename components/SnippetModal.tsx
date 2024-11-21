@@ -66,6 +66,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
   const [editedTags, setEditedTags] = useState(snippet.tags || []);
   const { theme: appTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -176,17 +177,25 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
+    setTagInput?.(value);
+
     if (value.endsWith(',')) {
-      const newTags = value
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0);
-      
-      setEditedTags(Array.from(new Set(newTags)));
+      const tag = value.slice(0, -1).trim();
+      if (tag && !editedTags.includes(tag)) {
+        setEditedTags(prevTags => [...prevTags, tag]);
+      }
       e.target.value = '';
-    } else {
-      setEditedTags(value.split(',').map(tag => tag.trim()));
+    }
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+      e.preventDefault();
+      const tag = e.currentTarget.value.trim();
+      if (!editedTags.includes(tag)) {
+        setEditedTags(prevTags => [...prevTags, tag]);
+      }
+      e.currentTarget.value = '';
     }
   };
 
@@ -289,32 +298,30 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 <Label>Tags</Label>
                 <Input
                   type="text"
-                  placeholder="Add tags separated by commas"
+                  placeholder="Type and press Enter or add comma to create tags"
                   onChange={handleTagsChange}
-                  value={editedTags.join(', ')}
+                  onKeyDown={handleTagKeyDown}
                 />
-                {editedTags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {editedTags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="flex items-center gap-1"
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {editedTags.map((tag, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
+                      {tag}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        onClick={() => setEditedTags(editedTags.filter((_, i) => i !== index))}
                       >
-                        {tag}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0 hover:bg-transparent"
-                          onClick={() => setEditedTags(editedTags.filter((_, i) => i !== index))}
-                        >
-                          <X size={12} />
-                        </Button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                        <X size={12} />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
               </div>
 
               <div className="flex justify-end gap-2">
