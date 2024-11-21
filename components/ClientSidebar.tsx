@@ -5,7 +5,6 @@ import {
   RefreshCw,
   Plus,
   Star,
-  User2,
   ChevronDown,
   Info,
   Shield,
@@ -32,7 +31,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 interface ClientSidebarProps {
   onFilterChange: (

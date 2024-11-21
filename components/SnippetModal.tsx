@@ -177,25 +177,25 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setTagInput?.(value);
+    setTagInput(value);
 
     if (value.endsWith(',')) {
       const tag = value.slice(0, -1).trim();
       if (tag && !editedTags.includes(tag)) {
         setEditedTags(prevTags => [...prevTags, tag]);
       }
-      e.target.value = '';
+      setTagInput('');
     }
   };
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+    if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
-      const tag = e.currentTarget.value.trim();
+      const tag = tagInput.trim();
       if (!editedTags.includes(tag)) {
         setEditedTags(prevTags => [...prevTags, tag]);
       }
-      e.currentTarget.value = '';
+      setTagInput('');
     }
   };
 
@@ -299,6 +299,7 @@ const SnippetModal: React.FC<SnippetModalProps> = ({
                 <Input
                   type="text"
                   placeholder="Type and press Enter or add comma to create tags"
+                  value={tagInput}
                   onChange={handleTagsChange}
                   onKeyDown={handleTagKeyDown}
                 />
